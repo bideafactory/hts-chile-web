@@ -81,10 +81,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (header) {
             if (window.scrollY > 50) {
                 header.style.padding = '5px 0';
-                header.style.backgroundColor = 'rgba(17, 17, 17, 0.95)';
+                header.style.backgroundColor = 'rgba(252, 247, 247, 0.82)';
             } else {
                 header.style.padding = '10px 0';
-                header.style.backgroundColor = '#111111';
+                header.style.backgroundColor = '#faf7f7';
             }
         }
     });
