@@ -14,47 +14,60 @@ const nextBtn = document.getElementById('next-btn');
 const folderPath = 'images/proyectos/';
 
 /**
- * Rastra la carpeta y carga los archivos
+ * Escáner Automático de Archivos Numerados (Solución Dinámica)
  */
 async function autoDiscoverMedia() {
     try {
-        const response = await fetch(folderPath);
-        const htmlText = await response.text();
-        
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(htmlText, 'text/html');
-        const links = doc.querySelectorAll('a');
+        proyectosData = [];
+        const extensiones = ['png', 'jpg', 'jpeg', 'mp4', 'webm'];
+        let numeroActual = 1;
+        let seguirBuscando = true;
 
-        proyectosData = []; 
+        // Mostrar un mensaje de carga mientras busca
+        mainViewer.innerHTML = '<div class="viewer-placeholder">Cargando galería...</div>';
 
-        links.forEach(link => {
-            let fileName = link.getAttribute('href');
-            if (fileName.includes('?') || fileName.startsWith('..')) return;
+        while (seguirBuscando) {
+            let archivoEncontrado = false;
 
-            const ext = fileName.split('.').pop().toLowerCase();
-            const allowedExts = ['jpg', 'jpeg', 'png', 'mp4', 'webm'];
-            
-            if (allowedExts.includes(ext)) {
-                const type = (ext === 'mp4' || ext === 'webm') ? 'video' : 'image';
+            // Probamos cada extensión para el número actual
+            for (const ext of extensiones) {
+                const urlPrueba = `${folderPath}${numeroActual}.${ext}`;
                 
-                let finalUrl = fileName;
-                if (!fileName.includes(folderPath) && !fileName.startsWith('http')) {
-                    finalUrl = folderPath + fileName;
+                try {
+                    // Usamos el método HEAD para preguntar si existe sin descargar el archivo completo
+                    const respuesta = await fetch(urlPrueba, { method: 'HEAD' });
+
+                    if (respuesta.ok) {
+                        // ¡Existe! Lo agregamos a la lista
+                        const type = (ext === 'mp4' || ext === 'webm') ? 'video' : 'image';
+                        proyectosData.push({ type: type, url: urlPrueba });
+                        archivoEncontrado = true;
+                        break; // Rompemos el ciclo de extensiones porque ya hallamos el de este número
+                    }
+                } catch (error) {
+                    // Error de red temporal, el ciclo continúa probando
                 }
-
-                proyectosData.push({ type: type, url: finalUrl });
             }
-        });
 
+            if (archivoEncontrado) {
+                numeroActual++; // Pasamos al siguiente número (ej. de 23 a 24)
+            } else {
+                seguirBuscando = false; // No encontró ninguna extensión para este número, FIN DEL ESCANEO.
+            }
+        }
+
+        // Renderizamos la galería final
         if (proyectosData.length > 0) {
             renderThumbnails();
             loadMedia(0);
             startSlideshow();
         } else {
-            mainViewer.innerHTML = '<div class="viewer-placeholder">No hay archivos en /images/proyectos/</div>';
+            mainViewer.innerHTML = '<div class="viewer-placeholder">No hay archivos en la galería</div>';
         }
+
     } catch (error) {
-        console.error("Error en el rastreo:", error);
+        console.error("Error crítico al armar la galería:", error);
+        mainViewer.innerHTML = '<div class="viewer-placeholder">Error al cargar la galería</div>';
     }
 }
 
