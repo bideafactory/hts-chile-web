@@ -26,7 +26,7 @@ function loadHTSGallery() {
     for (let i = 1; i <= TOTAL_IMAGENES_HTS; i++) {
         proyectosData.push({
             type: 'image',
-            url: `${folderPath}${i}.jpg`
+            url: `${folderPath}${i}.png`
         });
     }
 
