@@ -20,6 +20,7 @@
   header{
     background:linear-gradient(135deg,var(--primary),var(--primary-dark));
     color:#fff; padding:18px 24px;
+    position: relative; /* Para el sync-indicator */
   }
   header h1{margin:0; font-size:1.3rem;}
   header p{margin:4px 0 0; font-size:.85rem; opacity:.85;}
@@ -93,6 +94,7 @@
   .search{min-width:200px;}
   textarea.bulk{width:100%; min-height:90px; font-family:monospace; font-size:.82rem;}
   
+  /* Bloqueo total (solo para carga inicial) */
   #loading-overlay {
     display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.8);
     z-index: 1000; align-items: center; justify-content: center; flex-direction: column;
@@ -101,6 +103,29 @@
     width: 40px; height: 40px; border: 4px solid var(--primary);
     border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;
   }
+  
+  /* Nuevo Toast Notification para actualizaciones silenciosas */
+  #toast-notification {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: #333; color: white; padding: 10px 20px; border-radius: 30px;
+    font-size: 0.85rem; z-index: 9999; opacity: 0; transition: all 0.4s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  }
+  #toast-notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  
+  /* Indicador silencioso (para guardados en segundo plano) */
+  #sync-indicator {
+    position: absolute; top: 18px; right: 24px;
+    background: rgba(0,0,0,0.2); color: #fff; font-size: 0.75rem; padding: 4px 10px;
+    border-radius: 20px; display: flex; align-items: center; gap: 6px;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  }
+  #sync-indicator.show { opacity: 1; }
+  .mini-spinner {
+    width: 12px; height: 12px; border: 2px solid #fff; border-top-color: transparent;
+    border-radius: 50%; animation: spin 1s linear infinite;
+  }
+
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
 </head>
@@ -136,8 +161,11 @@
 
 <div id="loading-overlay">
   <div class="spinner"></div>
-  <p style="margin-top: 10px; font-weight: 600; color: var(--primary-dark);">Sincronizando con la Base de Datos...</p>
+  <p style="margin-top: 10px; font-weight: 600; color: var(--primary-dark);">Descargando datos...</p>
 </div>
+
+<!-- Nuevo toast para notificar actualizaciones de caché -->
+<div id="toast-notification"></div>
 
 <div id="app-root" style="display:none;">
   <header style="display:flex; align-items:center; gap:14px;">
@@ -146,6 +174,7 @@
       <h1>Planilla de Horas Extras</h1>
       <p>Registro diario · Operaciones · Arranques · Administración · Emergencia</p>
     </div>
+    <div id="sync-indicator"><div class="mini-spinner"></div> Guardando...</div>
   </header>
 
   <nav>
@@ -157,7 +186,7 @@
 
   <main>
     <div class="banner">
-      <b>¡Conectado a Google Sheets!</b> Los datos se guardan y leen automáticamente desde la nube con IDs numéricos correlativos.
+      <b>¡Conectado a Google Sheets!</b> Los datos se guardan en segundo plano automáticamente con IDs numéricos.
     </div>
 
     <div class="card" id="card-responsables">
@@ -339,7 +368,7 @@
 
 <script>
 // ---------- URL DE LA API DE GOOGLE APPS SCRIPT ----------
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsLXQSqzqz6rldCQ_NgRp9mkJAWdnCPS7N4d_Z4oGMUj87hb1QBSqB7NcurA_bZRNFEA/exec'; // <--- PEGA TU NUEVA URL AQUÍ
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzFv2UkkH593HbXHVWfpI9ZF_9dWuj4rv2nMVYGthEsIzZf2NAd8ZrJ7ogSTjvnAsFFhA/exec';
 
 // ---------- Acceso con clave ----------
 const ACCESS_HASH = 'd5ab26d2aae48560457eac24e3e02c3af682a1cdc4624a27d951b06c077e8bed'; // HTS2026*
@@ -380,17 +409,75 @@ let workers = [];
 let entries = {}; 
 let aprobaciones = {};
 
+// Mostrar un mensaje toast (flotante)
+function showToast(message) {
+  const toast = document.getElementById('toast-notification');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// Solo usado si realmente no hay caché
 function mostrarLoading(mostrar) {
   document.getElementById('loading-overlay').style.display = mostrar ? 'flex' : 'none';
 }
 
-async function cargarDatosDesdeGoogle() {
+// Indicador silencioso de guardado (POST) y carga en background
+function setSyncing(isSyncing, text = 'Guardando...') {
+  const ind = document.getElementById('sync-indicator');
+  if(isSyncing) {
+    ind.classList.add('show');
+    ind.innerHTML = `<div class="mini-spinner"></div> ${text}`;
+  } else {
+    ind.innerHTML = '✓ Sincronizado';
+    setTimeout(() => ind.classList.remove('show'), 2000);
+  }
+}
+
+function inicializarAppConCache() {
+  // 1. Intentar cargar desde Caché Local primero
+  const cacheWorkers = localStorage.getItem('hhee_cache_workers');
+  const cacheEntries = localStorage.getItem('hhee_cache_entries');
+  const cacheAprobaciones = localStorage.getItem('hhee_cache_aprobaciones');
+
+  if (cacheWorkers && cacheEntries) {
+    // Tenemos caché: Arrancar instantáneamente
+    workers = JSON.parse(cacheWorkers);
+    entries = JSON.parse(cacheEntries);
+    aprobaciones = cacheAprobaciones ? JSON.parse(cacheAprobaciones) : {};
+    
+    renderResponsables(); renderRegistro(); renderTrabajadores(); renderResumen();
+    
+    // Y luego pedir los datos frescos silenciosamente
+    cargarDatosDesdeGoogleSilencioso();
+  } else {
+    // No hay caché (primera vez que abre): Mostrar spinner
+    cargarDatosDesdeGoogleConSpinner();
+  }
+}
+
+async function cargarDatosDesdeGoogleConSpinner() {
   if(GOOGLE_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') {
-      alert("Configura la constante GOOGLE_SCRIPT_URL en el código HTML con la URL de tu Google Apps Script.");
+      alert("Configura la constante GOOGLE_SCRIPT_URL en el código HTML.");
       return;
   }
-  
   mostrarLoading(true);
+  await fetchYProcesarDatos();
+  mostrarLoading(false);
+}
+
+async function cargarDatosDesdeGoogleSilencioso() {
+  if(GOOGLE_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') return;
+  setSyncing(true, 'Actualizando...');
+  const huboCambios = await fetchYProcesarDatos();
+  setSyncing(false);
+  
+  if (huboCambios) {
+    showToast("Datos actualizados desde la nube.");
+  }
+}
+
+async function fetchYProcesarDatos() {
   try {
     const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'GET', mode: 'cors' });
     if(!response.ok) throw new Error("Error en la respuesta de la red");
@@ -398,26 +485,79 @@ async function cargarDatosDesdeGoogle() {
     const result = await response.json();
     
     if(result.status === 'success') {
-       workers = result.data.workers || [];
-       entries = result.data.entries || {};
-       aprobaciones = result.data.aprobaciones || {};
-       
-       renderResponsables(); renderRegistro(); renderTrabajadores(); renderResumen();
+       const newWorkers = result.data.workers || [];
+       const newEntries = result.data.entries || {};
+       const newAprobaciones = result.data.aprobaciones || {};
+
+       // Comprobar si hubo un cambio real vs la caché para no re-renderizar sin sentido
+       const currentCacheData = JSON.stringify({ w: workers, e: entries, a: aprobaciones });
+       const newDataStr = JSON.stringify({ w: newWorkers, e: newEntries, a: newAprobaciones });
+
+       if (currentCacheData !== newDataStr) {
+         workers = newWorkers;
+         entries = newEntries;
+         aprobaciones = newAprobaciones;
+         
+         // Actualizar Caché local
+         localStorage.setItem('hhee_cache_workers', JSON.stringify(workers));
+         localStorage.setItem('hhee_cache_entries', JSON.stringify(entries));
+         localStorage.setItem('hhee_cache_aprobaciones', JSON.stringify(aprobaciones));
+
+         renderResponsables(); renderRegistro(); renderTrabajadores(); renderResumen();
+         return true; // Hubo cambios
+       }
+       return false; // No hubo cambios
     } else {
        console.error("Error del servidor:", result.message);
-       alert("Error al cargar datos desde Google Sheets.");
+       return false;
     }
   } catch(error) {
     console.error("Fetch error:", error);
-    alert("Hubo un problema de conexión intentando cargar los datos.");
-  } finally {
-    mostrarLoading(false);
+    return false;
   }
 }
 
+// Modificar intentarDesbloqueo para usar la nueva función de inicialización
+async function intentarDesbloqueo(){
+  const val = document.getElementById('lock-input').value;
+  const hash = await sha256Hex(val);
+  if(hash === ACCESS_HASH){
+    sessionStorage.setItem('hhee_unlocked', '1');
+    document.getElementById('lock-overlay').style.display = 'none';
+    document.getElementById('app-root').style.display = '';
+    inicializarAppConCache(); // Reemplazo
+  } else {
+    document.getElementById('lock-error').textContent = 'Clave incorrecta.';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const input = document.getElementById('lock-input');
+  if(sessionStorage.getItem('hhee_unlocked')==='1'){
+    document.getElementById('lock-overlay').style.display = 'none';
+    document.getElementById('app-root').style.display = '';
+    inicializarAppConCache(); // Reemplazo
+  } else if(input){
+    input.focus();
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter') intentarDesbloqueo(); });
+  }
+});
+
+// Bandera para no saturar con llamadas simultáneas
+let isSaving = false;
+let pendingSave = false;
+
 async function guardarDatosEnGoogle(payload) {
    if(GOOGLE_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') return;
-   mostrarLoading(true);
+   
+   if(isSaving) {
+       pendingSave = true; // Dejar constancia de que hay otro cambio pendiente
+       return;
+   }
+   
+   isSaving = true;
+   setSyncing(true);
+   
    try {
        const response = await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST', mode: 'cors',
@@ -429,9 +569,18 @@ async function guardarDatosEnGoogle(payload) {
        if(result.status !== 'success') throw new Error(result.message);
    } catch(error) {
        console.error("Error al guardar:", error);
-       alert("No se pudieron guardar los cambios en Google Sheets. Revisa la consola.");
+       document.getElementById('sync-indicator').innerHTML = '❌ Error de red';
+       // No removemos el show para que el usuario note el error
    } finally {
-       mostrarLoading(false);
+       isSaving = false;
+       setSyncing(false);
+       
+       // Si el usuario tecleó mientras guardábamos, lanzamos el guardado de nuevo
+       if(pendingSave) {
+           pendingSave = false;
+           // Mandar el estado más fresco completo (porque payload original ya está viejo)
+           guardarDatosEnGoogle({ workers, entries, aprobaciones });
+       }
    }
 }
 
@@ -441,7 +590,6 @@ function saveAprobaciones(){ guardarDatosEnGoogle({ aprobaciones: aprobaciones }
 
 function getNextId() {
   if (workers.length === 0) return 1;
-  // Encuentra el ID numérico más alto y le suma 1
   const maxId = workers.reduce((max, w) => Math.max(max, parseInt(w.id) || 0), 0);
   return maxId + 1;
 }
@@ -558,6 +706,7 @@ function eliminarTrabajador(id){
   Object.keys(entries).forEach(k => { if(k.split('|')[0] == id) delete entries[k]; });
   Object.keys(aprobaciones).forEach(k => { if(k.split('|')[0] == id) delete aprobaciones[k]; });
   
+  // Como afecta a las 3 hojas, mandamos un paquete completo
   guardarDatosEnGoogle({ workers, entries, aprobaciones });
   renderTrabajadores();
 }
@@ -603,6 +752,7 @@ function renderTrabajadores(){
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 let timeoutGuardar = null;
+
 function actualizarEntry(workerId, campo, valor){
   const fecha = document.getElementById('reg-fecha').value;
   const k = `${workerId}|${fecha}`;
@@ -610,12 +760,13 @@ function actualizarEntry(workerId, campo, valor){
   entries[k][campo] = campo==='obs' ? valor : (valor===''? '' : Number(valor));
   
   const flag = document.getElementById('flag-'+workerId);
-  // Debounce para evitar bloqueos por llamadas constantes a Google
+  if(flag){ flag.classList.add('show'); setTimeout(()=>flag.classList.remove('show'), 1200); }
+
+  // Aumentado a 1.5s para empaquetar mejor los tipeos rápidos de muchos inputs
   if(timeoutGuardar) clearTimeout(timeoutGuardar);
   timeoutGuardar = setTimeout(() => {
      saveEntries();
-     if(flag){ flag.classList.add('show'); setTimeout(()=>flag.classList.remove('show'), 1200); }
-  }, 1000);
+  }, 1500);
 }
 
 function renderRegistro(){
@@ -698,7 +849,6 @@ function renderResumen(){
 
   const totalExtra = filas.reduce((s,f)=>s+f.extra,0);
   const totalTrab = filas.filter(f=>f.dias>0).length;
-  // Contabilizamos las aprobaciones directamente para pintar la tarjeta de MPM
   const totalAprobados = filas.filter(f=> aprobaciones[`${f.w.id}|${mes}`] === 'Si').length;
   
   totalesDiv.innerHTML = `
@@ -724,7 +874,7 @@ function exportarExcel(){
   const aprobLabel = v => v==='Si' ? 'Sí' : (v==='No' ? 'No' : 'Pendiente');
 
   // Hoja Resumen
-  const resumenRows = [['ID', 'Trabajador','Cargo','RUT','Centro de Costo','Responsable de Centro de Costo','Días registrados','Horas extras','Aprobación final (MPM)']];
+  const resumenRows = [['ID', 'Trabajador','Cargo','RUT','Centro de Costo','Responsable de Centro de Costo','Días registrados','Horas extras','Aprobación final']];
   const porTrabajador = {};
   Object.keys(entries).forEach(k=>{
     const [workerId, fecha] = k.split('|');
