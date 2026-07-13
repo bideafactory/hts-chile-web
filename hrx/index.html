@@ -311,7 +311,7 @@
                 <th>Responsable de Centro de Costo</th>
                 <th>Días registrados</th>
                 <th>Horas extras</th>
-                <th>Aprobación final (MPM)</th>
+                <th>Aprobación final</th>
               </tr>
             </thead>
             <tbody id="tbody-resumen"></tbody>
@@ -704,7 +704,7 @@ function renderResumen(){
   totalesDiv.innerHTML = `
     <div class="stat"><div class="num">${totalTrab}</div><div class="lbl">Trabajadores con registros</div></div>
     <div class="stat"><div class="num">${totalExtra.toFixed(1)}</div><div class="lbl">Horas extras totales</div></div>
-    <div class="stat"><div class="num">${totalAprobados}</div><div class="lbl">Aprobados por MPM</div></div>
+    <div class="stat"><div class="num">${totalAprobados}</div><div class="lbl">Aprobados</div></div>
   `;
 }
 
