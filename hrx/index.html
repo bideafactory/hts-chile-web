@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 <title>HTS Chile - Planilla de Horas Extras</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 220'%3E%3Cpath d='M100,15 C150,60 178,105 155,145 C138,172 62,172 45,145 C22,105 50,60 100,15 Z' fill='none' stroke='%231e5aa8' stroke-width='9'/%3E%3Cpath d='M100,37 C136,70 155,103 138,132 C124,153 76,153 62,132 C45,103 64,70 100,37 Z' fill='none' stroke='%23159bd6' stroke-width='8'/%3E%3Cpath d='M100,88 C112,102 119,114 112,125 C106,133 94,133 88,125 C81,114 88,102 100,88 Z' fill='%238dc63f'/%3E%3C/svg%3E">
+<link rel="icon" href="https://htschile.com/images/logo-hts.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
@@ -209,15 +209,55 @@
     box-shadow: var(--shadow-sm);
   }
 
-  .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
-  /* Updated field styling for better alignment */
-  .field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 200px; position: relative; justify-content: flex-end;}
-  .field label { font-size: 0.8rem; color: #475569; font-weight: 600; letter-spacing: 0.01em; }
-  
-  input, select, textarea {
-    padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 1rem; 
-    font-family: inherit; background: #f8fafc; color: var(--text); transition: all 0.2s; width: 100%;
+  /* SISTEMA DE GRID ROBUSTO PARA IOS/IPAD */
+  .row { 
+    display: flex; 
+    gap: 16px; 
+    flex-wrap: wrap; 
+    align-items: stretch; /* Estira las columnas para que midan lo mismo */
   }
+  
+  .field { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px; 
+    flex: 1 1 200px; 
+    position: relative; 
+    justify-content: flex-end; /* Ancla los inputs en la base */
+    min-width: 0; /* Previene desbordamientos de flex */
+  }
+  
+  .field label { 
+    font-size: 0.8rem; 
+    color: #475569; 
+    font-weight: 600; 
+    letter-spacing: 0.01em; 
+  }
+  
+  /* NORMALIZACIÓN NATIVA IOS */
+  input, select, textarea {
+    padding: 12px 14px; 
+    border: 1px solid #cbd5e1; 
+    border-radius: 10px; 
+    font-size: 1rem; 
+    font-family: inherit; 
+    background: #f8fafc; 
+    color: var(--text); 
+    transition: all 0.2s; 
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Reset vital para que Safari no deforme los calendarios */
+  input[type="date"], 
+  input[type="month"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 46px; 
+    height: 46px;
+    display: block; 
+  }
+
   input:focus, select:focus, textarea:focus { outline: none; border-color: #3b82f6; background: #fff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
   input.error, select.error, textarea.error { border-color: var(--danger); background: #fef2f2; }
   
@@ -228,6 +268,7 @@
     background: var(--primary); color: #fff; border: 1px solid transparent; padding: 12px 20px;
     border-radius: 10px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.2s ease;
     display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
+    height: 46px;
   }
   button.btn:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
   button.btn:active { transform: translateY(0); }
@@ -235,16 +276,14 @@
   button.btn.secondary:hover { background: var(--accent); border-color: var(--primary); }
   button.btn.danger { background: #fff; color: var(--danger); border: 1px solid #fca5a5; }
   button.btn.danger:hover { background: #fef2f2; border-color: var(--danger); }
-  button.btn.small { padding: 8px 14px; font-size: 0.85rem; border-radius: 8px; }
+  button.btn.small { padding: 8px 14px; font-size: 0.85rem; border-radius: 8px; height: auto;}
 
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: #fff; box-shadow: var(--shadow-sm); }
   table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 800px; }
   thead th { position: sticky; top: 0; background: #f8fafc; color: #475569; text-align: left; padding: 14px; border-bottom: 1px solid #cbd5e1; z-index: 10; font-weight: 600; font-size: 0.85rem;}
-  /* Allow natural wrapping to avoid hidden columns */
   tbody td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; line-height: 1.4; } 
   tbody tr:hover { background: #f0f9ff; }
   tbody tr:last-child td { border-bottom: none; }
-  /* Protect select from squishing */
   td select { min-width: 110px; padding: 8px 10px; } 
 
   .hrs-input { width: 80px; text-align: center; font-weight: 600; padding: 8px; }
@@ -306,7 +345,7 @@
   .page-size-selector { display: flex; align-items: center; gap: 8px; }
   .page-size-selector label { font-size: 0.85rem; color: var(--muted); font-weight: 500; }
   .page-size-selector select { padding: 6px 10px; width: auto; min-width: 60px; font-size: 0.85rem; border-radius: 6px;}
-  .page-btn { background: #fff; border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--text); transition: all 0.2s; box-shadow: var(--shadow-sm); }
+  .page-btn { background: #fff; border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--text); transition: all 0.2s; box-shadow: var(--shadow-sm); height: auto;}
   .page-btn:hover:not(:disabled) { background: var(--accent); color: var(--primary-dark); border-color: #bae6fd; }
   .page-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
   .page-info { font-size: 0.9rem; color: var(--muted); font-weight: 500; }
@@ -343,7 +382,7 @@
     .card { padding: 16px; margin-bottom: 12px; border-radius: 14px; }
     
     .row { gap: 12px; }
-    .field { flex: 1 1 100%; justify-content: flex-start;} /* Reset in mobile to standard block layout */
+    .field { flex: 1 1 100%; justify-content: flex-start;} 
     
     .toolbar { flex-direction: column; align-items: stretch; gap: 12px; }
     .toolbar h2 { margin-bottom: 0; }
@@ -680,12 +719,12 @@
 
     <div class="tab" id="tab-resumen">
       <div class="card">
-        <div class="toolbar">
-          <div class="row" style="flex-grow: 1;">
+        <div class="toolbar" style="margin-bottom: 24px;">
+          <div class="row" style="flex-grow: 1; align-items: flex-start; padding-bottom: 24px;"> <!-- Padding bottom makes room for absolute text -->
             <div class="field">
               <label>MES DE EVALUACIÓN (CORTE 26)</label>
               <input type="month" id="res-mes">
-              <span id="res-periodo" style="font-size:.75rem; color:var(--muted); font-weight: 500; margin-top: -2px;"></span>
+              <span id="res-periodo" style="position: absolute; bottom: -24px; left: 0; font-size: .75rem; color: var(--muted); font-weight: 500; white-space: nowrap;"></span>
             </div>
             <div class="field">
               <label>FILTRAR CENTRO DE COSTO</label>
@@ -996,7 +1035,6 @@ function toggleMobileMenu() {
 function generarPaginacion(totalItems, currentPage, rowsPerPage, tabIdentifier) {
   const totalPages = Math.ceil(totalItems / rowsPerPage);
   
-  // Opciones de tamaños de página
   const pageSizeOptions = [15, 25, 35, 50].map(size => 
       `<option value="${size}" ${size === rowsPerPage ? 'selected' : ''}>${size}</option>`
   ).join('');
@@ -1012,9 +1050,7 @@ function generarPaginacion(totalItems, currentPage, rowsPerPage, tabIdentifier) 
   `;
 
   if (totalItems <= 15 && rowsPerPage >= 15) {
-      // Si hay muy pocos items, solo mostramos el selector si queremos, pero lo más limpio es ocultar la paginación si cabe en una sola.
       if(totalItems <= rowsPerPage) {
-          // Aún así renderizamos el contenedor vacío para mantener la estructura si queremos
           return '';
       }
   }
@@ -1060,7 +1096,6 @@ function changePage(tabIdentifier, page) {
         renderResumen();
     }
 }
-
 
 async function intentarDesbloqueo(){
   const input = document.getElementById('lock-input');
