@@ -59,7 +59,7 @@ header {
     background: var(--color-blanco);
     /* Bajamos el padding de 15px a 5px para ganar espacio interno */
     padding: 5px 0; 
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(252, 251, 251, 0.315);
     position: sticky;
     top: 0;
     z-index: 1000;
