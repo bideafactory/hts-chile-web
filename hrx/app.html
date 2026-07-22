@@ -368,33 +368,59 @@
         .ios-gif-container {
             background: #f1f5f9;
             border-radius: 16px;
-            padding: 24px 16px;
+            padding: 24px; /* Aumentamos un poco el padding interno */
             margin: 20px 0;
             position: relative;
             border: 2px dashed #cbd5e1;
+            text-align: left; /* Alineamos el bloque entero a la izquierda */
         }
 
+        /* Rediseño de la estructura de pasos (Grid/Flex) */
         .ios-visual-step {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            align-items: center; /* Centrado vertical */
+            justify-content: flex-start; /* Alineado a la izquierda */
+            gap: 16px; /* Separación fija entre el texto y el icono */
+            font-size: 1.05rem;
             color: #0f172a;
-            margin-bottom: 16px;
+            margin-bottom: 0;
+        }
+
+        .step-number {
+            font-weight: 700;
+            color: var(--text-muted);
+            min-width: 20px; /* Asegura que todos los números ocupen el mismo ancho base */
+        }
+
+        .step-action-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
         }
 
         .ios-native-icon {
-            color: #007aff; /* Azul nativo de iOS */
             display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0; /* Evita que el icono se aplaste */
         }
 
         .ios-divider {
             height: 1px;
-            background: #e2e8f0;
-            width: 80%;
-            margin: 16px auto;
+            background: #cbd5e1;
+            width: 100%;
+            margin: 16px 0; /* Margen superior e inferior para separar pasos */
+        }
+
+        .apple-fake-btn {
+            background: #007aff;
+            color: white !important;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
         }
 
         .safari-hint {
@@ -572,11 +598,52 @@
             <div id="modal-step-ios" class="ios-instructions">
                 <!-- Flecha Flotante Superior Derecha -->
                 <div class="top-right-arrow">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="5" y1="19" x2="19" y2="5"></line>
                         <polyline points="9 5 19 5 19 15"></polyline>
                     </svg>
                 </div>
+
+                <h3 style="font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 8px;">Instalación en iOS / iPadOS</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Sigue estos 3 sencillos pasos utilizando el menú de la <strong>esquina superior derecha</strong>:</p>
+                
+                <div class="ios-gif-container">
+                    <div class="ios-visual-step">
+                        <span class="step-number">1.</span>
+                        <div class="step-action-group">
+                            Toca
+                            <div class="ios-native-icon" style="color: #007aff;">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+                            </div>
+                            Compartir
+                        </div>
+                    </div>
+                    
+                    <div class="ios-divider"></div>
+                    
+                    <div class="ios-visual-step">
+                        <span class="step-number">2.</span>
+                        <div class="step-action-group">
+                            Toca
+                            <div class="ios-native-icon" style="color: #0f172a;">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                            </div>
+                            Añadir a inicio
+                        </div>
+                    </div>
+
+                    <div class="ios-divider"></div>
+
+                    <div class="ios-visual-step">
+                        <span class="step-number">3.</span>
+                        <div class="step-action-group">
+                            Confirma con <span class="apple-fake-btn">Agregar</span>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="safari-hint">Busca el ícono apuntado por la flecha en el navegador.</p>
+            </div>
 
                 <h3 style="font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 8px;">Instalación en iOS</h3>
                 <p style="color: var(--text-muted); font-size: 0.95rem;">Sigue estos 3 pasos en el menú superior:</p>
