@@ -3,127 +3,217 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Planilla de Horas Extras</title>
+<title>HTS Chile - Planilla de Horas Extras</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 260 220'%3E%3Cpath d='M100,15 C150,60 178,105 155,145 C138,172 62,172 45,145 C22,105 50,60 100,15 Z' fill='none' stroke='%231e5aa8' stroke-width='9'/%3E%3Cpath d='M100,37 C136,70 155,103 138,132 C124,153 76,153 62,132 C45,103 64,70 100,37 Z' fill='none' stroke='%23159bd6' stroke-width='8'/%3E%3Cpath d='M100,88 C112,102 119,114 112,125 C106,133 94,133 88,125 C81,114 88,102 100,88 Z' fill='%238dc63f'/%3E%3C/svg%3E">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <style>
-  :root{
-    --bg:#f4f6f8; --card:#ffffff; --primary:#1e5aa8; --primary-dark:#154078;
-    --text:#1f2937; --muted:#6b7280; --border:#e2e5ea; --accent:#e8f0fb;
-    --danger:#c0392b; --ok:#1e8e3e;
+  :root {
+    --bg: #f4f6f8; 
+    --card: #ffffff; 
+    --primary: #1e5aa8; 
+    --primary-dark: #154078;
+    --text: #1f2937; 
+    --muted: #6b7280; 
+    --border: #e2e5ea; 
+    --accent: #e8f0fb;
+    --danger: #c0392b; 
+    --ok: #1e8e3e;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
-  *{box-sizing:border-box;}
-  body{
-    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-    background:var(--bg); color:var(--text);
-  }
-  header{
-    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-    color:#fff; padding:18px 24px;
-    position: relative;
-  }
-  header h1{margin:0; font-size:1.3rem;}
-  header p{margin:4px 0 0; font-size:.85rem; opacity:.85;}
-  nav{
-    display:flex; gap:4px; background:var(--card); padding:0 24px;
-    border-bottom:1px solid var(--border); overflow-x:auto;
-  }
-  nav button{
-    border:none; background:transparent; padding:14px 16px; font-size:.92rem;
-    cursor:pointer; color:var(--muted); border-bottom:3px solid transparent; white-space:nowrap;
-  }
-  nav button.active{color:var(--primary); border-bottom-color:var(--primary); font-weight:600;}
-  main{padding:20px 24px 60px; max-width:1300px; margin:0 auto;}
-  .card{
-    background:var(--card); border:1px solid var(--border); border-radius:10px;
-    padding:18px; margin-bottom:18px;
-  }
-  .row{display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;}
-  .field{display:flex; flex-direction:column; gap:4px;}
-  .field label{font-size:.78rem; color:var(--muted); font-weight:600;}
-  input, select, textarea{
-    padding:8px 10px; border:1px solid var(--border); border-radius:6px; font-size:.9rem;
-    font-family:inherit; background:#fff; color:var(--text);
-  }
-  input:focus, select:focus, textarea:focus{outline:2px solid var(--accent); border-color:var(--primary);}
-  button.btn{
-    background:var(--primary); color:#fff; border:none; padding:9px 16px;
-    border-radius:6px; cursor:pointer; font-size:.88rem; font-weight:600;
-  }
-  button.btn:hover{background:var(--primary-dark);}
-  button.btn.secondary{background:#fff; color:var(--primary); border:1px solid var(--primary);}
-  button.btn.secondary:hover{background:var(--accent);}
-  button.btn.danger{background:#fff; color:var(--danger); border:1px solid var(--danger);}
-  button.btn.danger:hover{background:#fdecea;}
-  button.btn.small{padding:5px 10px; font-size:.78rem;}
-  table{width:100%; border-collapse:collapse; font-size:.87rem;}
-  thead th{
-    position:sticky; top:0; background:var(--accent); color:var(--primary-dark);
-    text-align:left; padding:9px 10px; border-bottom:2px solid var(--border); z-index:1;
-  }
-  tbody td{padding:6px 10px; border-bottom:1px solid var(--border); vertical-align:middle;}
-  tbody tr:hover{background:#fafbfc;}
-  .table-wrap{max-height:65vh; overflow:auto; border:1px solid var(--border); border-radius:8px;}
-  .hrs-input{width:64px; text-align:center;}
-  .badge{
-    display:inline-block; padding:2px 9px; border-radius:20px; font-size:.72rem; font-weight:600;
-  }
-  .badge.op{background:#e3f2fd; color:#1565c0;}
-  .badge.ar{background:#fff3e0; color:#e65100;}
-  .badge.ad{background:#ede7f6; color:#4527a0;}
-  .badge.em{background:#fdecea; color:#c62828;}
-  .totals{display:flex; gap:16px; flex-wrap:wrap; margin-top:10px;}
-  .totals .stat{
-    background:var(--accent); border-radius:8px; padding:10px 16px; min-width:140px;
-  }
-  .totals .stat .num{font-size:1.3rem; font-weight:700; color:var(--primary-dark);}
-  .totals .stat .lbl{font-size:.75rem; color:var(--muted);}
-  .banner{
-    background:#e8f0fb; border:1px solid var(--primary); color:var(--primary-dark); padding:10px 14px;
-    border-radius:8px; font-size:.82rem; margin-bottom:16px;
-  }
-  .save-flag{font-size:.72rem; color:var(--ok); margin-left:6px; opacity:0; transition:opacity .3s;}
-  .save-flag.show{opacity:1;}
-  .empty{padding:30px; text-align:center; color:var(--muted);}
-  .tab{display:none;}
-  .tab.active{display:block;}
-  footer{text-align:center; color:var(--muted); font-size:.75rem; padding:20px;}
-  h2{font-size:1.05rem; margin:0 0 12px;}
-  h3{font-size:.92rem; margin:0 0 10px; color:var(--muted);}
-  .toolbar{display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px;}
-  .search{min-width:200px;}
-  textarea.bulk{width:100%; min-height:90px; font-family:monospace; font-size:.82rem;}
+
+  * { box-sizing: border-box; }
   
-  #loading-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.8);
-    z-index: 1000; align-items: center; justify-content: center; flex-direction: column;
+  body {
+    margin: 0; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg); 
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
   }
-  .spinner {
-    width: 40px; height: 40px; border: 4px solid var(--primary);
-    border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;
+
+  header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff; 
+    padding: 16px 20px;
+    position: relative;
+    box-shadow: var(--shadow-md);
   }
+  header h1 { margin: 0; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.025em; }
+  header p { margin: 4px 0 0; font-size: 0.875rem; opacity: 0.9; }
+
+  nav {
+    display: flex; 
+    gap: 8px; 
+    background: var(--card); 
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border); 
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  
+  nav button {
+    border: none; 
+    background: transparent; 
+    padding: 14px 12px; 
+    font-size: 0.9rem;
+    cursor: pointer; 
+    color: var(--muted); 
+    border-bottom: 3px solid transparent; 
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    font-weight: 500;
+  }
+  nav button:hover { color: var(--primary); }
+  nav button.active { 
+    color: var(--primary); 
+    border-bottom-color: var(--primary); 
+    font-weight: 600; 
+  }
+
+  main { 
+    padding: 20px; 
+    max-width: 1400px; 
+    margin: 0 auto; 
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--card); 
+    border: 1px solid var(--border); 
+    border-radius: 12px;
+    padding: 20px; 
+    box-shadow: var(--shadow-sm);
+  }
+
+  .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+  .field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 200px; position: relative;}
+  .field label { font-size: 0.8rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  
+  input, select, textarea {
+    padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem;
+    font-family: inherit; background: #fff; color: var(--text); transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 90, 168, 0.15); }
+  input.error, select.error, textarea.error { border-color: var(--danger); }
+  
+  .error-msg { color: var(--danger); font-size: 0.75rem; margin-top: 2px; font-weight: 500; min-height: 1.2em; }
+
+  button.btn {
+    background: var(--primary); color: #fff; border: 1px solid transparent; padding: 10px 18px;
+    border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.2s ease;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
+  }
+  button.btn:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  button.btn:active { transform: translateY(0); }
+  button.btn.secondary { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+  button.btn.secondary:hover { background: var(--accent); }
+  button.btn.danger { background: #fff; color: var(--danger); border: 1px solid var(--danger); }
+  button.btn.danger:hover { background: #fdecea; }
+  button.btn.small { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: #fff; box-shadow: var(--shadow-sm); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 800px; }
+  thead th { position: sticky; top: 0; background: var(--accent); color: var(--primary-dark); text-align: left; padding: 12px 14px; border-bottom: 2px solid var(--border); z-index: 10; font-weight: 600; }
+  tbody td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; line-height: 1.4; }
+  tbody tr:hover { background: #f8fafc; }
+  tbody tr:last-child td { border-bottom: none; }
+  td select { min-width: 110px; }
+
+  .hrs-input { width: 70px; text-align: center; font-weight: 600; }
+  
+  .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; }
+  .badge.op { background: #e3f2fd; color: #1565c0; }
+  .badge.ar { background: #fff3e0; color: #e65100; }
+  .badge.ad { background: #ede7f6; color: #4527a0; }
+  .badge.em { background: #fdecea; color: #c62828; }
+
+  .totals { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
+  .totals .stat { background: var(--accent); border-radius: 10px; padding: 14px 20px; flex: 1 1 160px; border: 1px solid rgba(30, 90, 168, 0.1); }
+  .totals .stat .num { font-size: 1.5rem; font-weight: 700; color: var(--primary-dark); line-height: 1.2;}
+  .totals .stat .lbl { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+
+  .banner { background: #e8f0fb; border: 1px solid rgba(30, 90, 168, 0.2); color: var(--primary-dark); padding: 12px 16px; border-radius: 10px; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; }
+  .save-flag { font-size: 0.8rem; color: var(--ok); margin-left: 8px; opacity: 0; transition: opacity 0.3s; font-weight: bold; }
+  .save-flag.show { opacity: 1; }
+  .empty { padding: 40px 20px; text-align: center; color: var(--muted); font-style: italic; }
+  
+  .tab { display: none; animation: fadeIn 0.3s ease; }
+  .tab.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+  footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 20px 0; margin-top: auto;}
+  h2 { font-size: 1.1rem; margin: 0 0 16px; color: var(--primary-dark); }
+  h3 { font-size: 0.9rem; margin: 0 0 12px; color: var(--muted); font-weight: 500;}
+  
+  .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
+  .search { min-width: 250px; flex-grow: 1; }
+  textarea.bulk { width: 100%; min-height: 120px; font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; font-size: 0.85rem; resize: vertical; }
+
+  /* Custom Modals (Lightboxes) */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px);
+    display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px;
+    opacity: 0; transition: opacity 0.2s ease;
+  }
+  .modal-overlay.show { display: flex; opacity: 1; }
+  .modal-content {
+    background: var(--card); border-radius: 12px; width: 100%; max-width: 450px;
+    box-shadow: var(--shadow-lg); overflow: hidden; transform: scale(0.95); transition: transform 0.2s ease;
+  }
+  .modal-overlay.show .modal-content { transform: scale(1); }
+  .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h2 { margin: 0; font-size: 1.1rem; color: var(--text); }
+  .modal-close { background: none; border: none; font-size: 1.5rem; color: var(--muted); cursor: pointer; padding: 0; line-height: 1; }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 20px; }
+  .modal-footer { padding: 16px 20px; background: #f8fafc; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+  /* Accordion styles */
+  .accordion-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .accordion-icon { transition: transform 0.3s ease; color: var(--primary); font-size: 0.8rem; }
+  .accordion-header.open .accordion-icon { transform: rotate(180deg); }
+  .accordion-content { display: none; padding-top: 16px; margin-top: 16px; border-top: 1px dashed var(--border); }
+  
+  /* Pagination Styles */
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 16px; }
+  .page-btn { background: #fff; border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--text); transition: all 0.2s; }
+  .page-btn:hover:not(:disabled) { background: var(--accent); color: var(--primary-dark); border-color: var(--primary); }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .page-info { font-size: 0.85rem; color: var(--muted); font-weight: 500; }
+
+  #loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.85); backdrop-filter: blur(2px); z-index: 1000; align-items: center; justify-content: center; flex-direction: column; }
+  .spinner { width: 44px; height: 44px; border: 4px solid var(--accent); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
   
   #toast-notification {
-    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
-    background: #333; color: white; padding: 10px 20px; border-radius: 30px;
-    font-size: 0.85rem; z-index: 9999; opacity: 0; transition: all 0.4s ease;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1f2937; color: white; padding: 12px 24px; border-radius: 30px;
+    font-size: 0.9rem; font-weight: 500; z-index: 9999; opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2); display: flex; align-items: center; gap: 8px;
   }
   #toast-notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   
   #sync-indicator {
-    position: absolute; top: 18px; right: 24px;
-    background: rgba(0,0,0,0.2); color: #fff; font-size: 0.75rem; padding: 4px 10px;
-    border-radius: 20px; display: flex; align-items: center; gap: 6px;
-    opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(255,255,255,0.15); color: #fff; font-size: 0.8rem; padding: 6px 12px;
+    border-radius: 20px; display: flex; align-items: center; gap: 8px; opacity: 0; transition: opacity 0.3s; pointer-events: none; font-weight: 500;
   }
   #sync-indicator.show { opacity: 1; }
-  .mini-spinner {
-    width: 12px; height: 12px; border: 2px solid #fff; border-top-color: transparent;
-    border-radius: 50%; animation: spin 1s linear infinite;
-  }
-
+  .mini-spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  /* Mobile responsiveness enhancements */
+  @media (max-width: 768px) {
+    .row { flex-direction: column; align-items: stretch; gap: 12px;}
+    .field { flex: 1 1 auto; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .toolbar h2 { margin-bottom: 8px; }
+    .search { width: 100%; }
+    .totals .stat { flex: 1 1 45%; }
+  }
 </style>
 </head>
 <body>
@@ -140,79 +230,95 @@
       <path d="M0,196 C30,182 60,210 90,196 C120,182 150,210 180,196" fill="none" stroke="#a9e2f3" stroke-width="5" stroke-linecap="round"/>
       <text x="220" y="115" transform="rotate(90 220 115)" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="34" fill="#1e5aa8" letter-spacing="1">HTSChile</text>
     </symbol>
+    <symbol id="icon-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </symbol>
   </defs>
 </svg>
 
 <div id="lock-overlay" style="position:fixed; inset:0; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); display:flex; align-items:center; justify-content:center; z-index:999; padding:20px;">
-  <div class="card" style="max-width:360px; width:100%; text-align:center;">
-    <svg viewBox="0 0 260 220" width="70" height="60" style="margin-bottom:6px;"><use href="#logo-hts"/></svg>
-    <h2>Acceso restringido</h2>
-    <p style="font-size:.85rem; color:var(--muted); margin-top:-6px;">Planilla de Horas Extras — ingresa la clave de acceso para continuar.</p>
+  <div class="card" style="max-width:380px; width:100%; text-align:center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);">
+    <svg viewBox="0 0 260 220" width="80" height="70" style="margin-bottom:10px;"><use href="#logo-hts"/></svg>
+    <h2 style="color:var(--text);">Acceso restringido</h2>
+    <p style="font-size:0.9rem; color:var(--muted); margin-top:-6px; margin-bottom: 20px;">Planilla de Horas Extras — ingresa la clave de acceso para continuar.</p>
     <div class="field" style="margin-top:10px;">
-      <input type="password" id="lock-input" placeholder="Clave de acceso" autocomplete="off">
+      <input type="password" id="lock-input" placeholder="Clave de acceso" autocomplete="off" style="text-align: center; font-size: 1.1rem; padding: 12px;">
     </div>
-    <button class="btn" style="margin-top:10px; width:100%;" onclick="intentarDesbloqueo()">Entrar</button>
-    <div id="lock-error" style="color:var(--danger); font-size:.8rem; margin-top:8px; min-height:1em;"></div>
+    <button class="btn" style="margin-top:16px; width:100%; padding: 12px;" onclick="intentarDesbloqueo()">Entrar a la plataforma</button>
+    <div id="lock-error" style="color:var(--danger); font-size:0.85rem; font-weight: 500; margin-top:12px; min-height:1.2em;"></div>
   </div>
 </div>
 
 <div id="loading-overlay">
   <div class="spinner"></div>
-  <p style="margin-top: 10px; font-weight: 600; color: var(--primary-dark);">Descargando datos...</p>
+  <p style="margin-top: 16px; font-weight: 600; color: var(--primary-dark); font-size: 1.1rem;">Sincronizando datos...</p>
 </div>
 
-<div id="toast-notification"></div>
+<div id="toast-notification"><svg width="20" height="20"><use href="#icon-check"/></svg> <span id="toast-msg"></span></div>
 
-<div id="app-root" style="display:none;">
-  <header style="display:flex; align-items:center; gap:14px;">
-    <svg viewBox="0 0 260 220" width="48" height="41" style="flex-shrink:0;"><use href="#logo-hts"/></svg>
-    <div>
-      <h1>Planilla de Horas Extras</h1>
-      <p>Registro diario · Operaciones · Arranques · Administración · Emergencia</p>
+<div id="app-root" style="display:none; min-height: 100vh; display: flex; flex-direction: column;">
+  <header>
+    <div style="display:flex; align-items:center; gap:16px; max-width: 1400px; margin: 0 auto; width: 100%;">
+      <svg viewBox="0 0 260 220" width="54" height="46" style="flex-shrink:0;"><use href="#logo-hts"/></svg>
+      <div>
+        <h1>Planilla de Horas Extras</h1>
+        <p>Registro diario · Operaciones · Arranques · Administración · Emergencia</p>
+      </div>
+      <div id="sync-indicator"><div class="mini-spinner"></div> Guardando...</div>
     </div>
-    <div id="sync-indicator"><div class="mini-spinner"></div> Guardando...</div>
   </header>
 
   <nav>
-    <button class="tab-btn active" data-tab="registro">Registro Diario</button>
-    <button class="tab-btn" data-tab="trabajadores">Trabajadores</button>
-    <button class="tab-btn" data-tab="resumen">Resumen Mensual</button>
-    <button class="tab-btn" data-tab="datos">Datos y Respaldo</button>
+    <div style="display:flex; gap:8px; max-width: 1400px; margin: 0 auto; width: 100%;">
+      <button class="tab-btn active" data-tab="registro">Registro Diario</button>
+      <button class="tab-btn" data-tab="trabajadores">Trabajadores</button>
+      <button class="tab-btn" data-tab="resumen">Resumen Mensual</button>
+      <button class="tab-btn" data-tab="datos">Datos y Respaldo</button>
+    </div>
   </nav>
 
   <main>
     <div class="banner">
-      <b>¡Conectado a Google Sheets!</b> Los datos se guardan en segundo plano automáticamente con IDs numéricos.
+      <div style="background: var(--primary); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold;">i</div>
+      <div><b>¡Conectado a Google Sheets!</b> Los datos se guardan en segundo plano automáticamente con IDs numéricos.</div>
     </div>
 
     <div class="card" id="card-responsables">
-      <div class="toolbar" style="align-items:center;">
-        <h2 style="margin:0;">Responsables de llenado y aprobación</h2>
+      <div class="toolbar accordion-header" onclick="toggleResponsables()" style="margin-bottom: 0;">
+        <h2 style="margin:0; display: flex; align-items: center; gap: 8px;">
+          Responsables de llenado y aprobación
+          <svg class="accordion-icon" width="16" height="16"><use href="#icon-chevron"/></svg>
+        </h2>
         <div id="corte-aviso" class="badge" style="background:#e8f0fb; color:#154078; font-weight:700;"></div>
       </div>
-      <div class="table-wrap" style="max-height:none;">
-        <table>
-          <thead><tr><th>Centro de costo</th><th>Responsable de Centro de Costo</th></tr></thead>
-          <tbody id="tbody-responsables"></tbody>
-        </table>
+      <div class="accordion-content" id="content-responsables">
+        <div class="table-wrap" style="max-height:none;">
+          <table>
+            <thead><tr><th>Centro de costo</th><th>Responsable de Centro de Costo</th></tr></thead>
+            <tbody id="tbody-responsables"></tbody>
+          </table>
+        </div>
+        <p style="font-size:0.85rem; color:var(--muted); margin:16px 0 0; background: var(--bg); padding: 10px 14px; border-radius: 6px;">
+          Aprobación final: <b id="txt-aprobacion" style="color: var(--text);"></b> &nbsp;·&nbsp; Corte de horas: día <b>26</b> de cada mes.
+        </p>
       </div>
-      <p style="font-size:.85rem; color:var(--muted); margin:12px 0 0;">
-        Aprobación final: <b id="txt-aprobacion"></b> &nbsp;·&nbsp; Corte de horas: día <b>26</b> de cada mes.
-      </p>
     </div>
 
     <div class="tab active" id="tab-registro">
       <div class="card">
         <div class="toolbar">
-          <div class="row">
+          <div class="row" style="flex-grow: 1;">
             <div class="field">
-              <label>Fecha</label>
+              <label>Fecha de Registro</label>
               <input type="date" id="reg-fecha">
             </div>
             <div class="field">
-              <label>Centro de costo</label>
+              <label>Filtrar Centro de Costo</label>
               <select id="reg-centro">
-                <option value="">Todos</option>
+                <option value="">Todos los centros</option>
                 <option>Operaciones</option>
                 <option>Arranques</option>
                 <option>Administración</option>
@@ -221,7 +327,7 @@
             </div>
             <div class="field search">
               <label>Buscar trabajador</label>
-              <input type="text" id="reg-buscar" placeholder="Nombre o RUT...">
+              <input type="text" id="reg-buscar" placeholder="Escribe un nombre o RUT...">
             </div>
           </div>
         </div>
@@ -229,38 +335,40 @@
           <table id="tbl-registro">
             <thead>
               <tr>
-                <th>ID</th>
+                <th style="width: 50px;">ID</th>
                 <th>Trabajador</th>
                 <th>Cargo</th>
                 <th>Centro de costo</th>
-                <th>Horas extras</th>
-                <th>Observaciones</th>
+                <th style="width: 100px;">Horas extras</th>
+                <th>Observaciones (Opcional)</th>
               </tr>
             </thead>
             <tbody id="tbody-registro"></tbody>
           </table>
         </div>
+        <div id="pag-registro"></div>
       </div>
     </div>
 
     <div class="tab" id="tab-trabajadores">
       <div class="card">
-        <h2>Agregar trabajador</h2>
+        <h2>Agregar nuevo trabajador</h2>
         <div class="row">
           <div class="field">
-            <label>Nombre completo</label>
-            <input type="text" id="w-nombre" placeholder="Juan Pérez">
+            <label>Nombre completo <span style="color:var(--danger)">*</span></label>
+            <input type="text" id="w-nombre" placeholder="Ej. Juan Pérez">
+            <div class="error-msg" id="err-w-nombre"></div>
           </div>
           <div class="field">
             <label>RUT</label>
-            <input type="text" id="w-rut" placeholder="12.345.678-9">
+            <input type="text" id="w-rut" placeholder="Opcional">
           </div>
           <div class="field">
             <label>Cargo</label>
-            <input type="text" id="w-cargo" placeholder="Maestro, Ayudante...">
+            <input type="text" id="w-cargo" placeholder="Ej. Maestro">
           </div>
           <div class="field">
-            <label>Centro de costo</label>
+            <label>Centro de costo <span style="color:var(--danger)">*</span></label>
             <select id="w-centro">
               <option>Operaciones</option>
               <option>Arranques</option>
@@ -268,33 +376,43 @@
               <option>Emergencia</option>
             </select>
           </div>
-          <div class="field">
-            <button class="btn" onclick="agregarTrabajador()">+ Agregar</button>
+          <div class="field" style="justify-content: flex-end;">
+            <button class="btn" onclick="agregarTrabajador()" style="height: 40px;">+ Agregar Trabajador</button>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2>Carga masiva</h2>
-        <h3>Pega una fila por trabajador: Nombre, Cargo, RUT, Centro (separado por coma o tabulación).</h3>
-        <textarea class="bulk" id="w-bulk" placeholder="Juan Pérez, Maestro, 12.345.678-9, Operaciones"></textarea>
-        <div style="margin-top:8px;">
-          <button class="btn secondary" onclick="cargaMasiva()">Cargar lista</button>
-        </div>
-      </div>
-
-      <div class="card">
         <div class="toolbar">
-          <h2 style="margin:0;">Listado de trabajadores (<span id="cnt-trabajadores">0</span>)</h2>
-          <input type="text" class="search" id="w-buscar" placeholder="Buscar..." oninput="renderTrabajadores()">
+          <h2 style="margin:0;">Directorio de trabajadores (<span id="cnt-trabajadores" style="color:var(--primary);">0</span>)</h2>
+          <div class="field search" style="margin: 0; min-width: 300px;">
+            <input type="text" id="w-buscar" placeholder="Buscar en el directorio..." oninput="currentPageTrabajadores = 1; renderTrabajadores()">
+          </div>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th style="width:40px">ID</th><th>Nombre</th><th>Cargo</th><th>RUT</th><th>Centro de costo</th><th style="width:110px;">Acciones</th></tr>
+              <tr><th style="width:50px">ID</th><th>Nombre</th><th>Cargo</th><th>RUT</th><th>Centro de costo</th><th style="width:160px; text-align: right;">Acciones</th></tr>
             </thead>
             <tbody id="tbody-trabajadores"></tbody>
           </table>
+        </div>
+        <div id="pag-trabajadores"></div>
+      </div>
+
+      <div class="card" style="border: 1px dashed var(--muted); background: #fafafa;">
+        <div class="accordion-header" onclick="toggleBulkUpload()">
+          <h3 style="margin:0; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
+            Herramienta avanzada: Carga Masiva
+            <svg class="accordion-icon" width="16" height="16"><use href="#icon-chevron"/></svg>
+          </h3>
+        </div>
+        <div class="accordion-content" id="content-bulk" style="border-top-style: dashed;">
+          <p style="font-size: 0.85rem; color: var(--muted); margin-top: 0;">Pega una fila por trabajador separada por coma o tabulación: <code>Nombre, Cargo, RUT, Centro</code>.</p>
+          <textarea class="bulk" id="w-bulk" placeholder="Juan Pérez, Maestro, 12.345.678-9, Operaciones&#10;María López, Supervisora, 9.876.543-2, Arranques"></textarea>
+          <div style="margin-top:12px; display: flex; justify-content: flex-end;">
+            <button class="btn secondary" onclick="cargaMasiva()">Procesar lista masiva</button>
+          </div>
         </div>
       </div>
     </div>
@@ -302,16 +420,16 @@
     <div class="tab" id="tab-resumen">
       <div class="card">
         <div class="toolbar">
-          <div class="row">
+          <div class="row" style="flex-grow: 1;">
             <div class="field">
-              <label>Mes (corte 26)</label>
+              <label>Mes de Evaluación (corte 26)</label>
               <input type="month" id="res-mes">
-              <span id="res-periodo" style="font-size:.75rem; color:var(--muted);"></span>
+              <span id="res-periodo" style="font-size:.75rem; color:var(--muted); font-weight: 500;"></span>
             </div>
             <div class="field">
-              <label>Centro de costo</label>
+              <label>Filtrar Centro de Costo</label>
               <select id="res-centro">
-                <option value="">Todos</option>
+                <option value="">Todos los centros</option>
                 <option>Operaciones</option>
                 <option>Arranques</option>
                 <option>Administración</option>
@@ -319,232 +437,178 @@
               </select>
             </div>
           </div>
-          <button class="btn" onclick="exportarExcel()">Exportar a Excel (.xlsx)</button>
+          <button class="btn" onclick="exportarExcel()" style="background: #107c41;">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Exportar a Excel
+          </button>
         </div>
         <div class="totals" id="res-totales"></div>
       </div>
       <div class="card">
+        <h3 style="margin-top: 0;">Detalle de trabajadores con horas extras en el periodo</h3>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Trabajador</th>
                 <th>Cargo</th>
                 <th>Centro de costo</th>
                 <th>Responsable de Centro de Costo</th>
-                <th>Días registrados</th>
-                <th>Horas extras</th>
-                <th>Aprobación final</th>
+                <th style="text-align: center;">Días reg.</th>
+                <th style="text-align: center;">Horas extras</th>
+                <th style="width: 140px;">Aprobación</th>
               </tr>
             </thead>
             <tbody id="tbody-resumen"></tbody>
           </table>
         </div>
+        <div id="pag-resumen"></div>
       </div>
     </div>
 
     <div class="tab" id="tab-datos">
       <div class="card">
-        <h2>Respaldo y Archivos</h2>
-        <div class="row">
-          <button class="btn" onclick="exportarJSON()">Descargar respaldo (.json)</button>
-          <div class="field">
-            <label>Importar respaldo</label>
-            <input type="file" id="importFile" accept="application/json" onchange="importarJSON(event)">
+        <h2>Gestión de Datos y Respaldo</h2>
+        <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 20px;">Utiliza estas herramientas para crear copias de seguridad locales o restaurar la base de datos completa en caso de emergencia.</p>
+        <div class="row" style="align-items: center; background: var(--bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+          <div style="flex: 1;">
+            <h3 style="margin: 0 0 4px; color: var(--text);">Exportar Respaldo</h3>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Descarga un archivo .json con toda la información actual.</p>
+          </div>
+          <button class="btn secondary" onclick="exportarJSON()">Descargar .json</button>
+        </div>
+        
+        <div class="row" style="align-items: center; background: #fff5f5; padding: 20px; border-radius: 8px; border: 1px solid #fed7d7; margin-top: 16px;">
+          <div style="flex: 1;">
+            <h3 style="margin: 0 0 4px; color: var(--danger);">Restaurar Respaldo</h3>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--danger); opacity: 0.8;">Atención: Esto sobreescribirá todos los datos actuales en la nube.</p>
+          </div>
+          <div class="field" style="flex: 0 0 auto; margin: 0;">
+            <input type="file" id="importFile" accept="application/json" onchange="importarJSON(event)" style="border-color: #feb2b2; background: #fff;">
           </div>
         </div>
       </div>
     </div>
 
   </main>
-  <footer>Planilla de Horas Extras — datos sincronizados con Google Sheets.</footer>
+  <footer style="display: none;" id="app-footer">Desarrollado para HTS Chile · Los datos se sincronizan de forma segura con Google Sheets.</footer>
+</div>
+
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Editar Trabajador</h2>
+      <button class="modal-close" onclick="closeModal('modal-edit')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id">
+      <div class="field" style="margin-bottom: 12px;">
+        <label>Nombre completo <span style="color:var(--danger)">*</span></label>
+        <input type="text" id="edit-nombre">
+        <div class="error-msg" id="err-edit-nombre"></div>
+      </div>
+      <div class="field" style="margin-bottom: 12px;">
+        <label>Cargo</label>
+        <input type="text" id="edit-cargo">
+      </div>
+      <div class="field" style="margin-bottom: 12px;">
+        <label>RUT</label>
+        <input type="text" id="edit-rut">
+      </div>
+      <div class="field">
+        <label>Centro de costo <span style="color:var(--danger)">*</span></label>
+        <select id="edit-centro">
+          <option>Operaciones</option>
+          <option>Arranques</option>
+          <option>Administración</option>
+          <option>Emergencia</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('modal-edit')">Cancelar</button>
+      <button class="btn" onclick="guardarEdicionTrabajador()">Guardar Cambios</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-header" style="border-bottom-color: #fee2e2; background: #fff5f5;">
+      <h2 style="color: var(--danger);">Eliminar Trabajador</h2>
+      <button class="modal-close" onclick="closeModal('modal-delete')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="delete-id">
+      <p style="margin-top: 0; line-height: 1.5;">¿Estás seguro de que deseas eliminar a <strong id="delete-name" style="color: var(--text);"></strong> del directorio?</p>
+      <div style="background: #fef2f2; border-left: 4px solid var(--danger); padding: 10px 12px; font-size: 0.85rem; color: #991b1b; border-radius: 0 4px 4px 0;">
+        <strong>Advertencia:</strong> Esta acción borrará todos sus registros de horas extras y aprobaciones asociadas. Esta acción no se puede deshacer.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('modal-delete')">Cancelar</button>
+      <button class="btn danger" onclick="confirmarEliminarTrabajador()">Sí, Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-auth">
+  <div class="modal-content" style="max-width: 380px;">
+    <div class="modal-header">
+      <h2>Autenticación Requerida</h2>
+      <button class="modal-close" onclick="cancelAuth()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 0.9rem; color: var(--muted); margin-top: 0;">El área de Datos y Respaldo requiere permisos de administrador.</p>
+      <div class="field">
+        <label>Clave de administrador</label>
+        <input type="password" id="auth-input" autocomplete="off" placeholder="Ingresa la clave">
+        <div class="error-msg" id="err-auth-input"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="cancelAuth()">Cancelar</button>
+      <button class="btn" onclick="confirmAuth()">Verificar</button>
+    </div>
+  </div>
 </div>
 
 <script>
+// --- CONFIGURACIÓN ---
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyiNgZyBFM75KT44k-Uh_-iYx50iM2rB44LzFW3QGJPsahsjXwa3yXjlvKqPT6SmE7FZg/exec';
 const ACCESS_HASH = 'd5ab26d2aae48560457eac24e3e02c3af682a1cdc4624a27d951b06c077e8bed'; // HTS2026*
 const DATOS_HASH = '176d7530eb0b44f4821d6a95a4193d31677f3413a43d19e56c2fce1b8d3998c9'; // HTSAdmin2026#
 
+// --- ESTADO GLOBAL ---
 let workers = [];
 let entries = {}; 
 let aprobaciones = {};
 let isSaving = false;
 let pendingSave = false;
+let pendingTabTarget = null; 
 
+// --- PAGINACIÓN ---
+const ROWS_PER_PAGE = 25;
+let currentPageRegistro = 1;
+let currentPageTrabajadores = 1;
+let currentPageResumen = 1;
+
+// --- UTILIDADES ---
 async function sha256Hex(text){
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-function showToast(message) {
-  const toast = document.getElementById('toast-notification');
-  toast.textContent = message;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3500);
-}
-
-function mostrarLoading(mostrar) {
-  document.getElementById('loading-overlay').style.display = mostrar ? 'flex' : 'none';
-}
-
-function setSyncing(isSyncing, text = 'Guardando...') {
-  const ind = document.getElementById('sync-indicator');
-  if(isSyncing) {
-    ind.classList.add('show');
-    ind.innerHTML = `<div class="mini-spinner"></div> ${text}`;
-  } else {
-    ind.innerHTML = '✓ Sincronizado';
-    setTimeout(() => ind.classList.remove('show'), 2000);
-  }
-}
-
-async function intentarDesbloqueo(){
-  const val = document.getElementById('lock-input').value;
-  const hash = await sha256Hex(val);
-  if(hash === ACCESS_HASH){
-    sessionStorage.setItem('hhee_unlocked', '1');
-    document.getElementById('lock-overlay').style.display = 'none';
-    document.getElementById('app-root').style.display = '';
-    inicializarAppConCache(); 
-  } else {
-    document.getElementById('lock-error').textContent = 'Clave incorrecta.';
-  }
-}
-
-document.addEventListener('DOMContentLoaded', ()=>{
-  const input = document.getElementById('lock-input');
-  if(sessionStorage.getItem('hhee_unlocked')==='1'){
-    document.getElementById('lock-overlay').style.display = 'none';
-    document.getElementById('app-root').style.display = '';
-    inicializarAppConCache(); 
-  } else if(input){
-    input.focus();
-    input.addEventListener('keydown', e=>{ if(e.key==='Enter') intentarDesbloqueo(); });
-  }
-});
-
-function inicializarAppConCache() {
-  const cacheWorkers = localStorage.getItem('hhee_cache_workers');
-  const cacheEntries = localStorage.getItem('hhee_cache_entries');
-  const cacheAprobaciones = localStorage.getItem('hhee_cache_aprobaciones');
-
-  if (cacheWorkers && cacheEntries) {
-    workers = JSON.parse(cacheWorkers);
-    entries = JSON.parse(cacheEntries);
-    aprobaciones = cacheAprobaciones ? JSON.parse(cacheAprobaciones) : {};
-    
-    renderResponsables(); renderRegistro(); renderTrabajadores(); renderResumen();
-    cargarDatosDesdeGoogleSilencioso();
-  } else {
-    cargarDatosDesdeGoogleConSpinner();
-  }
-}
-
-async function cargarDatosDesdeGoogleConSpinner() {
-  if(GOOGLE_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') return;
-  mostrarLoading(true);
-  await fetchYProcesarDatos();
-  mostrarLoading(false);
-}
-
-async function cargarDatosDesdeGoogleSilencioso() {
-  if(GOOGLE_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') return;
-  setSyncing(true, 'Actualizando...');
-  const huboCambios = await fetchYProcesarDatos();
-  setSyncing(false);
-  if (huboCambios) {
-    showToast("Datos actualizados desde la nube.");
-  }
-}
-
-async function fetchYProcesarDatos() {
-  try {
-    const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'GET', mode: 'cors' });
-    if(!response.ok) throw new Error("Error en la respuesta de la red");
-    
-    const result = await response.json();
-    
-    if(result.status === 'success') {
-       const newWorkers = result.data.workers || [];
-       const newEntries = result.data.entries || {};
-       const newAprobaciones = result.data.aprobaciones || {};
-
-       const currentCacheData = JSON.stringify({ w: workers, e: entries, a: aprobaciones });
-       const newDataStr = JSON.stringify({ w: newWorkers, e: newEntries, a: newAprobaciones });
-
-       if (currentCacheData !== newDataStr) {
-         workers = newWorkers;
-         entries = newEntries;
-         aprobaciones = newAprobaciones;
-         
-         localStorage.setItem('hhee_cache_workers', JSON.stringify(workers));
-         localStorage.setItem('hhee_cache_entries', JSON.stringify(entries));
-         localStorage.setItem('hhee_cache_aprobaciones', JSON.stringify(aprobaciones));
-
-         renderResponsables(); renderRegistro(); renderTrabajadores(); renderResumen();
-         return true;
-       }
-       return false;
-    }
-  } catch(error) {
-    console.error("Fetch error:", error);
-    return false;
-  }
-}
-
-async function guardarDatosEnGoogle(payload) {
-   if(GOOGLE_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') return;
-   
-   if(isSaving) {
-       pendingSave = true; 
-       return;
-   }
-   
-   isSaving = true;
-   setSyncing(true);
-   
-   try {
-       const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST', mode: 'cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload)
-       });
-       
-       const result = await response.json();
-       if(result.status !== 'success') throw new Error(result.message);
-   } catch(error) {
-       console.error("Error al guardar:", error);
-       document.getElementById('sync-indicator').innerHTML = '❌ Error de red';
-   } finally {
-       isSaving = false;
-       setSyncing(false);
-       
-       if(pendingSave) {
-           pendingSave = false;
-           guardarDatosEnGoogle({ workers, entries, aprobaciones });
-       }
-   }
-}
-
-function saveWorkers(){ 
-  localStorage.setItem('hhee_cache_workers', JSON.stringify(workers));
-  guardarDatosEnGoogle({ workers: workers }); 
-}
-function saveEntries(){ 
-  localStorage.setItem('hhee_cache_entries', JSON.stringify(entries));
-  guardarDatosEnGoogle({ entries: entries }); 
-}
-function saveAprobaciones(){ 
-  localStorage.setItem('hhee_cache_aprobaciones', JSON.stringify(aprobaciones));
-  guardarDatosEnGoogle({ aprobaciones: aprobaciones }); 
-}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 function getNextId() {
   if (workers.length === 0) return 1;
   const maxId = workers.reduce((max, w) => Math.max(max, parseInt(w.id) || 0), 0);
   return maxId + 1;
 }
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function monthStr(){ return new Date().toISOString().slice(0,7); }
 
 function periodoRango(mesStr){
   const pad = n => String(n).padStart(2,'0');
@@ -574,6 +638,237 @@ const RESPONSABLES = {
   'Operaciones': 'María José Pérez Miranda (MPM)'
 };
 
+// --- UI HELPERS ---
+function showToast(message) {
+  const toast = document.getElementById('toast-notification');
+  document.getElementById('toast-msg').textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+function mostrarLoading(mostrar) {
+  document.getElementById('loading-overlay').style.display = mostrar ? 'flex' : 'none';
+}
+
+function setSyncing(isSyncing, text = 'Guardando...') {
+  const ind = document.getElementById('sync-indicator');
+  if(isSyncing) {
+    ind.classList.add('show');
+    ind.innerHTML = `<div class="mini-spinner"></div> ${text}`;
+  } else {
+    ind.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Sincronizado';
+    setTimeout(() => ind.classList.remove('show'), 2000);
+  }
+}
+
+function openModal(id) {
+  const modal = document.getElementById(id);
+  modal.classList.add('show');
+  const firstInput = modal.querySelector('input');
+  if(firstInput) setTimeout(()=>firstInput.focus(), 100);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  document.querySelectorAll('.error-msg').forEach(el => el.textContent = '');
+  document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('mousedown', e => {
+    if(e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+function toggleResponsables() {
+  const header = document.querySelector('#card-responsables .accordion-header');
+  const content = document.getElementById('content-responsables');
+  header.classList.toggle('open');
+  content.style.display = header.classList.contains('open') ? 'block' : 'none';
+}
+
+function toggleBulkUpload() {
+  const header = document.querySelector('#tab-trabajadores .accordion-header');
+  const content = document.getElementById('content-bulk');
+  header.classList.toggle('open');
+  content.style.display = header.classList.contains('open') ? 'block' : 'none';
+}
+
+function clearFieldError(inputId, errorId) {
+  document.getElementById(inputId).classList.remove('error');
+  document.getElementById(errorId).textContent = '';
+}
+
+function showFieldError(inputId, errorId, message) {
+  document.getElementById(inputId).classList.add('error');
+  document.getElementById(errorId).textContent = message;
+}
+
+// Generador genérico de botones de paginación
+function generarPaginacion(totalItems, currentPage, callbackName) {
+  if (totalItems <= ROWS_PER_PAGE) return '';
+  const totalPages = Math.ceil(totalItems / ROWS_PER_PAGE);
+  return `
+    <div class="pagination">
+      <button class="page-btn" onclick="${callbackName}(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>Anterior</button>
+      <span class="page-info">Página ${currentPage} de ${totalPages}</span>
+      <button class="page-btn" onclick="${callbackName}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Siguiente</button>
+    </div>
+  `;
+}
+
+function changePageRegistro(page) { currentPageRegistro = page; renderRegistro(); }
+function changePageTrabajadores(page) { currentPageTrabajadores = page; renderTrabajadores(); }
+function changePageResumen(page) { currentPageResumen = page; renderResumen(); }
+
+// --- AUTENTICACIÓN ---
+async function intentarDesbloqueo(){
+  const input = document.getElementById('lock-input');
+  const val = input.value;
+  const hash = await sha256Hex(val);
+  if(hash === ACCESS_HASH){
+    sessionStorage.setItem('hhee_unlocked', '1');
+    document.getElementById('lock-overlay').style.display = 'none';
+    document.getElementById('app-root').style.display = 'flex';
+    document.getElementById('app-footer').style.display = 'block';
+    inicializarAppConCache(); 
+  } else {
+    document.getElementById('lock-error').textContent = 'Clave incorrecta. Por favor, intenta nuevamente.';
+    input.value = ''; input.focus();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const input = document.getElementById('lock-input');
+  if(sessionStorage.getItem('hhee_unlocked')==='1'){
+    document.getElementById('lock-overlay').style.display = 'none';
+    document.getElementById('app-root').style.display = 'flex';
+    document.getElementById('app-footer').style.display = 'block';
+    inicializarAppConCache(); 
+  } else if(input){
+    input.focus();
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter') intentarDesbloqueo(); });
+  }
+  document.getElementById('auth-input').addEventListener('keydown', e => { if(e.key==='Enter') confirmAuth(); });
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const target = btn.dataset.tab;
+    if(target === 'datos' && sessionStorage.getItem('hhee_datos_unlocked')!=='1'){
+      pendingTabTarget = target;
+      document.getElementById('auth-input').value = '';
+      clearFieldError('auth-input', 'err-auth-input');
+      openModal('modal-auth');
+      return;
+    }
+    activarTab(target);
+  });
+});
+
+function activarTab(target) {
+  document.querySelectorAll('.tab-btn, .tab').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.tab-btn[data-tab="${target}"]`).classList.add('active');
+  document.getElementById('tab-'+target).classList.add('active');
+  if(target==='registro') renderRegistro();
+  if(target==='trabajadores') renderTrabajadores();
+  if(target==='resumen') renderResumen();
+}
+
+async function confirmAuth() {
+  const val = document.getElementById('auth-input').value;
+  if(await sha256Hex(val) !== DATOS_HASH){ showFieldError('auth-input', 'err-auth-input', 'Clave de administrador incorrecta.'); return; }
+  sessionStorage.setItem('hhee_datos_unlocked', '1');
+  closeModal('modal-auth');
+  if(pendingTabTarget) activarTab(pendingTabTarget);
+}
+
+function cancelAuth() { closeModal('modal-auth'); pendingTabTarget = null; }
+
+function inicializarAppConCache() {
+  const cacheWorkers = localStorage.getItem('hhee_cache_workers');
+  const cacheEntries = localStorage.getItem('hhee_cache_entries');
+  const cacheAprobaciones = localStorage.getItem('hhee_cache_aprobaciones');
+
+  if (cacheWorkers && cacheEntries) {
+    workers = JSON.parse(cacheWorkers);
+    entries = JSON.parse(cacheEntries);
+    aprobaciones = cacheAprobaciones ? JSON.parse(cacheAprobaciones) : {};
+    
+    renderResponsables(); renderRegistro(); renderTrabajadores(); renderResumen();
+    cargarDatosDesdeGoogleSilencioso();
+  } else {
+    cargarDatosDesdeGoogleConSpinner();
+  }
+}
+
+async function cargarDatosDesdeGoogleConSpinner() {
+  if(GOOGLE_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') return;
+  mostrarLoading(true); await fetchYProcesarDatos(); mostrarLoading(false);
+}
+
+async function cargarDatosDesdeGoogleSilencioso() {
+  if(GOOGLE_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') return;
+  setSyncing(true, 'Actualizando datos...');
+  const huboCambios = await fetchYProcesarDatos();
+  setSyncing(false);
+  if (huboCambios) showToast("Datos sincronizados con la nube.");
+}
+
+async function fetchYProcesarDatos() {
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'GET', mode: 'cors' });
+    if(!response.ok) throw new Error("Error en la respuesta de la red");
+    const result = await response.json();
+    if(result.status === 'success') {
+       const newWorkers = result.data.workers || [];
+       const newEntries = result.data.entries || {};
+       const newAprobaciones = result.data.aprobaciones || {};
+
+       const currentCacheData = JSON.stringify({ w: workers, e: entries, a: aprobaciones });
+       const newDataStr = JSON.stringify({ w: newWorkers, e: newEntries, a: newAprobaciones });
+
+       if (currentCacheData !== newDataStr) {
+         workers = newWorkers; entries = newEntries; aprobaciones = newAprobaciones;
+         localStorage.setItem('hhee_cache_workers', JSON.stringify(workers));
+         localStorage.setItem('hhee_cache_entries', JSON.stringify(entries));
+         localStorage.setItem('hhee_cache_aprobaciones', JSON.stringify(aprobaciones));
+         renderResponsables(); renderRegistro(); renderTrabajadores(); renderResumen();
+         return true;
+       }
+       return false;
+    }
+  } catch(error) { console.error("Fetch error:", error); return false; }
+}
+
+async function guardarDatosEnGoogle(payload) {
+   if(GOOGLE_SCRIPT_URL === 'TU_URL_DE_APPS_SCRIPT_AQUI') return;
+   if(isSaving) { pendingSave = true; return; }
+   
+   isSaving = true; setSyncing(true);
+   try {
+       const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST', mode: 'cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+       });
+       const result = await response.json();
+       if(result.status !== 'success') throw new Error(result.message);
+   } catch(error) {
+       console.error("Error al guardar:", error);
+       document.getElementById('sync-indicator').innerHTML = '❌ Error de red';
+       document.getElementById('sync-indicator').classList.add('show');
+   } finally {
+       isSaving = false; setSyncing(false);
+       if(pendingSave) { pendingSave = false; guardarDatosEnGoogle({ workers, entries, aprobaciones }); }
+   }
+}
+
+function saveWorkers(){ localStorage.setItem('hhee_cache_workers', JSON.stringify(workers)); guardarDatosEnGoogle({ workers: workers }); }
+function saveEntries(){ localStorage.setItem('hhee_cache_entries', JSON.stringify(entries)); guardarDatosEnGoogle({ entries: entries }); }
+function saveAprobaciones(){ localStorage.setItem('hhee_cache_aprobaciones', JSON.stringify(aprobaciones)); guardarDatosEnGoogle({ aprobaciones: aprobaciones }); }
+
+// --- RENDER Y LOGICA PRINCIPAL ---
 function renderResponsables(){
   const tbody = document.getElementById('tbody-responsables');
   tbody.innerHTML = CENTROS_VALIDOS.map(c=>`
@@ -588,48 +883,29 @@ function renderResponsables(){
   
   const dias = Math.round((corte - new Date(hoy.getFullYear(),hoy.getMonth(),hoy.getDate())) / 86400000);
   const aviso = document.getElementById('corte-aviso');
-  
   const corteStr = `${pad(corte.getDate())}-${pad(corte.getMonth()+1)}-${corte.getFullYear()}`;
   
   if(dias===0){
-    aviso.textContent = `Hoy es el corte de horas (${corteStr})`;
+    aviso.textContent = `Hoy es el corte (${corteStr})`;
     aviso.style.background = '#fdecea'; aviso.style.color = '#c0392b';
   } else {
-    aviso.textContent = `Faltan ${dias} día(s) para el corte (${corteStr})`;
+    aviso.textContent = `Faltan ${dias} día(s) para el corte`;
   }
 }
 
-function todayStr(){ return new Date().toISOString().slice(0,10); }
-function monthStr(){ return new Date().toISOString().slice(0,7); }
-
-document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.addEventListener('click', async ()=>{
-    if(btn.dataset.tab==='datos' && sessionStorage.getItem('hhee_datos_unlocked')!=='1'){
-      const val = prompt('Ingresa la clave de Datos y Respaldo:');
-      if(val===null) return;
-      if(await sha256Hex(val) !== DATOS_HASH){ alert('Clave incorrecta.'); return; }
-      sessionStorage.setItem('hhee_datos_unlocked', '1');
-    }
-    document.querySelectorAll('.tab-btn, .tab').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-    if(btn.dataset.tab==='registro') renderRegistro();
-    if(btn.dataset.tab==='trabajadores') renderTrabajadores();
-    if(btn.dataset.tab==='resumen') renderResumen();
-  });
-});
-
 function agregarTrabajador(){
+  clearFieldError('w-nombre', 'err-w-nombre');
   const nombre = document.getElementById('w-nombre').value.trim();
   const rut = document.getElementById('w-rut').value.trim();
   const cargo = document.getElementById('w-cargo').value.trim();
   const centro = document.getElementById('w-centro').value;
-  if(!nombre){ alert('Ingresa el nombre del trabajador.'); return; }
+  
+  if(!nombre){ showFieldError('w-nombre', 'err-w-nombre', 'El nombre es obligatorio.'); document.getElementById('w-nombre').focus(); return; }
   
   workers.push({id: getNextId(), nombre, rut, cargo, centro});
   saveWorkers();
   document.getElementById('w-nombre').value=''; document.getElementById('w-rut').value=''; document.getElementById('w-cargo').value='';
-  renderTrabajadores();
+  renderTrabajadores(); showToast('Trabajador agregado correctamente.');
 }
 
 function cargaMasiva(){
@@ -649,11 +925,47 @@ function cargaMasiva(){
   if(agregados > 0) saveWorkers();
   document.getElementById('w-bulk').value = errores.length ? errores.join('\n') : '';
   renderTrabajadores();
-  alert(agregados + ' agregado(s).' + (errores.length ? ' Errores quedaron en el cuadro.' : ''));
+  
+  if(errores.length > 0) alert(`${agregados} agregados. Las líneas con error quedaron en el cuadro de texto.`);
+  else { showToast(`${agregados} trabajadores importados correctamente.`); toggleBulkUpload(); }
+}
+
+function editarTrabajador(id){
+  const w = workers.find(w => String(w.id) === String(id));
+  if(!w) return;
+  document.getElementById('edit-id').value = w.id;
+  document.getElementById('edit-nombre').value = w.nombre;
+  document.getElementById('edit-cargo').value = w.cargo || '';
+  document.getElementById('edit-rut').value = w.rut || '';
+  document.getElementById('edit-centro').value = w.centro;
+  openModal('modal-edit');
+}
+
+function guardarEdicionTrabajador(){
+  clearFieldError('edit-nombre', 'err-edit-nombre');
+  const id = document.getElementById('edit-id').value;
+  const nombre = document.getElementById('edit-nombre').value.trim();
+  
+  if(!nombre){ showFieldError('edit-nombre', 'err-edit-nombre', 'El nombre no puede estar vacío.'); return; }
+  
+  const w = workers.find(w => String(w.id) === String(id));
+  if(w) {
+    w.nombre = nombre; w.cargo = document.getElementById('edit-cargo').value.trim();
+    w.rut = document.getElementById('edit-rut').value.trim(); w.centro = document.getElementById('edit-centro').value;
+    saveWorkers(); renderTrabajadores(); closeModal('modal-edit'); showToast('Datos actualizados correctamente.');
+  }
 }
 
 function eliminarTrabajador(id){
-  if(!confirm(`¿Eliminar al trabajador ID ${id}? También se perderán sus registros.`)) return;
+  const w = workers.find(w => String(w.id) === String(id));
+  if(!w) return;
+  document.getElementById('delete-id').value = w.id;
+  document.getElementById('delete-name').textContent = w.nombre;
+  openModal('modal-delete');
+}
+
+function confirmarEliminarTrabajador(){
+  const id = document.getElementById('delete-id').value;
   workers = workers.filter(w => String(w.id) !== String(id));
   Object.keys(entries).forEach(k => { if(k.split('|')[0] == id) delete entries[k]; });
   Object.keys(aprobaciones).forEach(k => { if(k.split('|')[0] == id) delete aprobaciones[k]; });
@@ -662,51 +974,51 @@ function eliminarTrabajador(id){
   localStorage.setItem('hhee_cache_entries', JSON.stringify(entries));
   localStorage.setItem('hhee_cache_aprobaciones', JSON.stringify(aprobaciones));
   guardarDatosEnGoogle({ workers, entries, aprobaciones });
-  renderTrabajadores();
-}
-
-function editarTrabajador(id){
-  const w = workers.find(w => String(w.id) === String(id));
-  if(!w) return;
-  const nombre = prompt('Nombre:', w.nombre); if(nombre===null) return;
-  const cargo = prompt('Cargo:', w.cargo||''); if(cargo===null) return;
-  const rut = prompt('RUT (opcional):', w.rut||''); if(rut===null) return;
-  const centro = prompt('Centro (Operaciones/Arranques/Administración/Emergencia):', w.centro); if(centro===null) return;
-  if(!CENTROS_VALIDOS.includes(centro)){ alert('Centro inválido.'); return; }
-  w.nombre = nombre.trim(); w.rut = rut.trim(); w.cargo = cargo.trim(); w.centro = centro;
-  saveWorkers(); renderTrabajadores();
+  
+  renderTrabajadores(); closeModal('modal-delete'); showToast('Trabajador y sus registros eliminados.');
 }
 
 function renderTrabajadores(){
   const filtro = (document.getElementById('w-buscar').value || '').toLowerCase();
   const tbody = document.getElementById('tbody-trabajadores');
+  const pagCont = document.getElementById('pag-trabajadores');
+
   const lista = workers
     .filter(w => w.nombre.toLowerCase().includes(filtro) || (w.rut||'').toLowerCase().includes(filtro) || String(w.id).includes(filtro))
     .sort((a,b)=> Number(a.id) - Number(b.id));
+  
   document.getElementById('cnt-trabajadores').textContent = workers.length;
   
   if(lista.length===0){
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin trabajadores.</td></tr>'; return;
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No se encontraron trabajadores en el directorio.</td></tr>'; 
+    pagCont.innerHTML = ''; return;
   }
-  tbody.innerHTML = lista.map(w=>`
+
+  const totalItems = lista.length;
+  const totalPages = Math.ceil(totalItems / ROWS_PER_PAGE);
+  if (currentPageTrabajadores > totalPages) currentPageTrabajadores = Math.max(1, totalPages);
+
+  const paginatedList = lista.slice((currentPageTrabajadores - 1) * ROWS_PER_PAGE, currentPageTrabajadores * ROWS_PER_PAGE);
+
+  tbody.innerHTML = paginatedList.map(w=>`
     <tr>
       <td><b>${w.id}</b></td>
-      <td>${escapeHtml(w.nombre)}</td>
+      <td style="font-weight: 500;">${escapeHtml(w.nombre)}</td>
       <td>${escapeHtml(w.cargo||'')}</td>
-      <td>${escapeHtml(w.rut||'')}</td>
+      <td><span style="font-family: monospace; color: var(--muted);">${escapeHtml(w.rut||'--')}</span></td>
       <td><span class="badge ${centroClass(w.centro)}">${w.centro}</span></td>
-      <td>
+      <td style="text-align: right; white-space: nowrap;">
         <button class="btn secondary small" onclick="editarTrabajador('${w.id}')">Editar</button>
-        <button class="btn danger small" onclick="eliminarTrabajador('${w.id}')">Eliminar</button>
+        <button class="btn danger small" onclick="eliminarTrabajador('${w.id}')" style="margin-left: 4px;">Eliminar</button>
       </td>
     </tr>
   `).join('');
+
+  pagCont.innerHTML = generarPaginacion(totalItems, currentPageTrabajadores, 'changePageTrabajadores');
 }
 
-function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
+// REGISTROS DIARIOS
 let timeoutGuardar = null;
-
 function actualizarEntry(workerId, campo, valor){
   const fecha = document.getElementById('reg-fecha').value;
   const k = `${workerId}|${fecha}`;
@@ -714,12 +1026,10 @@ function actualizarEntry(workerId, campo, valor){
   entries[k][campo] = campo==='obs' ? valor : (valor===''? '' : Number(valor));
   
   const flag = document.getElementById('flag-'+workerId);
-  if(flag){ flag.classList.add('show'); setTimeout(()=>flag.classList.remove('show'), 1200); }
+  if(flag){ flag.classList.add('show'); setTimeout(()=>flag.classList.remove('show'), 1500); }
 
   if(timeoutGuardar) clearTimeout(timeoutGuardar);
-  timeoutGuardar = setTimeout(() => {
-     saveEntries();
-  }, 1500);
+  timeoutGuardar = setTimeout(() => { saveEntries(); }, 1500);
 }
 
 function renderRegistro(){
@@ -727,6 +1037,7 @@ function renderRegistro(){
   const centro = document.getElementById('reg-centro').value;
   const buscar = (document.getElementById('reg-buscar').value || '').toLowerCase();
   const tbody = document.getElementById('tbody-registro');
+  const pagCont = document.getElementById('pag-registro');
 
   let lista = workers.filter(w=>{
     if(centro && w.centro!==centro) return false;
@@ -734,34 +1045,55 @@ function renderRegistro(){
     return true;
   }).sort((a,b)=> Number(a.id) - Number(b.id));
 
-  if(workers.length===0){ tbody.innerHTML = '<tr><td colspan="6" class="empty">No hay trabajadores.</td></tr>'; return; }
+  if(workers.length===0){ 
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No hay trabajadores registrados. Ve a la pestaña "Trabajadores" para agregarlos.</td></tr>'; 
+    pagCont.innerHTML = ''; return; 
+  }
+  if(lista.length===0){ 
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Ningún trabajador coincide con los filtros actuales.</td></tr>'; 
+    pagCont.innerHTML = ''; return; 
+  }
   
-  tbody.innerHTML = lista.map(w=>{
+  const totalItems = lista.length;
+  const totalPages = Math.ceil(totalItems / ROWS_PER_PAGE);
+  if (currentPageRegistro > totalPages) currentPageRegistro = Math.max(1, totalPages);
+
+  const paginatedList = lista.slice((currentPageRegistro - 1) * ROWS_PER_PAGE, currentPageRegistro * ROWS_PER_PAGE);
+
+  tbody.innerHTML = paginatedList.map(w=>{
     const k = `${w.id}|${fecha}`;
     const e = entries[k] || {extra:'', obs:''};
     return `
     <tr>
-      <td><b>${w.id}</b></td>
-      <td>${escapeHtml(w.nombre)}</td>
-      <td>${escapeHtml(w.cargo||'')}</td>
+      <td><span style="color: var(--muted); font-size: 0.8rem;">#${w.id}</span></td>
+      <td style="font-weight: 500;">${escapeHtml(w.nombre)}</td>
+      <td style="color: var(--muted); font-size: 0.85rem;">${escapeHtml(w.cargo||'')}</td>
       <td><span class="badge ${centroClass(w.centro)}">${w.centro}</span></td>
       <td><input class="hrs-input" type="number" min="0" max="24" step="0.5" value="${e.extra}" oninput="actualizarEntry('${w.id}','extra',this.value)"></td>
-      <td><input type="text" style="width:100%;" value="${escapeHtml(e.obs||'')}" oninput="actualizarEntry('${w.id}','obs',this.value)" placeholder="opcional"><span class="save-flag" id="flag-${w.id}">✓</span></td>
+      <td style="display: flex; align-items: center;">
+        <input type="text" style="flex-grow: 1;" value="${escapeHtml(e.obs||'')}" oninput="actualizarEntry('${w.id}','obs',this.value)" placeholder="Justificación o detalle...">
+        <span class="save-flag" id="flag-${w.id}">Guardado</span>
+      </td>
     </tr>`;
   }).join('');
+
+  pagCont.innerHTML = generarPaginacion(totalItems, currentPageRegistro, 'changePageRegistro');
 }
 
-document.getElementById('reg-fecha').addEventListener('change', renderRegistro);
-document.getElementById('reg-centro').addEventListener('change', renderRegistro);
-document.getElementById('reg-buscar').addEventListener('input', renderRegistro);
+// Listeners con reset de paginación
+document.getElementById('reg-fecha').addEventListener('change', () => { currentPageRegistro = 1; renderRegistro(); });
+document.getElementById('reg-centro').addEventListener('change', () => { currentPageRegistro = 1; renderRegistro(); });
+document.getElementById('reg-buscar').addEventListener('input', () => { currentPageRegistro = 1; renderRegistro(); });
 
+// RESUMEN MENSUAL
 function renderResumen(){
   const mes = document.getElementById('res-mes').value;
   const centroFiltro = document.getElementById('res-centro').value;
   const tbody = document.getElementById('tbody-resumen');
   const totalesDiv = document.getElementById('res-totales');
+  const pagCont = document.getElementById('pag-resumen');
   const {inicio, fin} = periodoRango(mes);
-  document.getElementById('res-periodo').textContent = `Periodo: ${inicio} al ${fin}`;
+  document.getElementById('res-periodo').textContent = `Comprende del ${inicio} al ${fin}`;
 
   const porTrabajador = {}; 
   Object.keys(entries).forEach(k=>{
@@ -774,41 +1106,70 @@ function renderResumen(){
     porTrabajador[workerId].dias += 1;
   });
 
-  let filas = workers.filter(w=> !centroFiltro || w.centro===centroFiltro).map(w=>{
-      return {w, ...(porTrabajador[w.id] || {extra:0, dias:0})};
-  }).sort((a,b)=> Number(a.w.id) - Number(b.w.id));
+  // Filtrar SOLAMENTE los trabajadores que tengan dias > 0
+  let filas = workers
+    .filter(w => !centroFiltro || w.centro===centroFiltro)
+    .map(w => ({w, ...(porTrabajador[w.id] || {extra:0, dias:0})}))
+    .filter(f => f.dias > 0)
+    .sort((a,b)=> Number(a.w.id) - Number(b.w.id));
 
-  tbody.innerHTML = filas.map(f=>{
+  const totalExtra = filas.reduce((s,f)=>s+f.extra,0);
+  const totalTrab = filas.length; 
+  const totalAprobados = filas.filter(f=> aprobaciones[`${f.w.id}|${mes}`] === 'Si').length;
+  const horasAprobadas = filas.reduce((s,f)=> aprobaciones[`${f.w.id}|${mes}`] === 'Si' ? s + f.extra : s, 0);
+
+  if(filas.length === 0){
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">No hay horas extras registradas en este periodo para los filtros seleccionados.</td></tr>';
+    totalesDiv.innerHTML = `
+      <div class="stat"><div class="num">0</div><div class="lbl">Trabajadores con registros</div></div>
+      <div class="stat"><div class="num">0</div><div class="lbl">Horas extras totales</div></div>
+      <div class="stat"><div class="num">0/0</div><div class="lbl">Aprobados</div></div>
+      <div class="stat"><div class="num">0.0</div><div class="lbl">Horas aprobadas</div></div>
+    `;
+    pagCont.innerHTML = '';
+    return;
+  }
+
+  const totalItems = filas.length;
+  const totalPages = Math.ceil(totalItems / ROWS_PER_PAGE);
+  if (currentPageResumen > totalPages) currentPageResumen = Math.max(1, totalPages);
+
+  const paginatedList = filas.slice((currentPageResumen - 1) * ROWS_PER_PAGE, currentPageResumen * ROWS_PER_PAGE);
+
+  tbody.innerHTML = paginatedList.map(f=>{
     const key = `${f.w.id}|${mes}`;
     const estado = aprobaciones[key] || '';
+    
+    let selectBg = '#fff', selectColor = 'var(--text)', selectBorder = 'var(--border)';
+    if(estado === 'Si') { selectBg = '#f0fdf4'; selectColor = '#166534'; selectBorder = '#bbf7d0'; }
+    if(estado === 'No') { selectBg = '#fef2f2'; selectColor = '#991b1b'; selectBorder = '#fecaca'; }
+
     return `
     <tr>
-      <td><b>${f.w.id}</b></td>
-      <td>${escapeHtml(f.w.nombre)}</td>
-      <td>${escapeHtml(f.w.cargo||'')}</td>
+      <td style="font-weight: 500;">${escapeHtml(f.w.nombre)}</td>
+      <td style="color: var(--muted); font-size: 0.85rem;">${escapeHtml(f.w.cargo||'')}</td>
       <td><span class="badge ${centroClass(f.w.centro)}">${f.w.centro}</span></td>
-      <td>${escapeHtml(RESPONSABLES[f.w.centro] || 'Por definir')}</td>
-      <td>${f.dias}</td>
-      <td><b>${f.extra.toFixed(1)}</b></td>
+      <td style="font-size: 0.85rem;">${escapeHtml(RESPONSABLES[f.w.centro] || 'Por definir')}</td>
+      <td style="text-align: center;">${f.dias}</td>
+      <td style="text-align: center;"><b>${f.extra.toFixed(1)}</b></td>
       <td>
-        <select onchange="actualizarAprobacion('${f.w.id}','${mes}',this.value)">
+        <select style="background-color: ${selectBg}; color: ${selectColor}; border-color: ${selectBorder}; font-weight: 500;" onchange="actualizarAprobacion('${f.w.id}','${mes}',this.value)">
           <option value="" ${estado===''?'selected':''}>Pendiente</option>
-          <option value="Si" ${estado==='Si'?'selected':''}>Sí</option>
-          <option value="No" ${estado==='No'?'selected':''}>No</option>
+          <option value="Si" ${estado==='Si'?'selected':''}>Sí, Aprobar</option>
+          <option value="No" ${estado==='No'?'selected':''}>Rechazar</option>
         </select>
       </td>
     </tr>`;
   }).join('');
-
-  const totalExtra = filas.reduce((s,f)=>s+f.extra,0);
-  const totalTrab = filas.filter(f=>f.dias>0).length;
-  const totalAprobados = filas.filter(f=> aprobaciones[`${f.w.id}|${mes}`] === 'Si').length;
   
   totalesDiv.innerHTML = `
     <div class="stat"><div class="num">${totalTrab}</div><div class="lbl">Trabajadores con registros</div></div>
     <div class="stat"><div class="num">${totalExtra.toFixed(1)}</div><div class="lbl">Horas extras totales</div></div>
-    <div class="stat"><div class="num">${totalAprobados}</div><div class="lbl">Aprobados</div></div>
+    <div class="stat"><div class="num">${totalAprobados}/${totalTrab}</div><div class="lbl">Aprobados</div></div>
+    <div class="stat"><div class="num" style="color: var(--ok);">${horasAprobadas.toFixed(1)}</div><div class="lbl">Horas aprobadas</div></div>
   `;
+
+  pagCont.innerHTML = generarPaginacion(totalItems, currentPageResumen, 'changePageResumen');
 }
 
 function actualizarAprobacion(workerId, mes, valor){
@@ -817,8 +1178,8 @@ function actualizarAprobacion(workerId, mes, valor){
   renderResumen();
 }
 
-document.getElementById('res-mes').addEventListener('change', renderResumen);
-document.getElementById('res-centro').addEventListener('change', renderResumen);
+document.getElementById('res-mes').addEventListener('change', () => { currentPageResumen = 1; renderResumen(); });
+document.getElementById('res-centro').addEventListener('change', () => { currentPageResumen = 1; renderResumen(); });
 
 function exportarExcel(){
   const mes = document.getElementById('res-mes').value || monthStr();
@@ -826,7 +1187,7 @@ function exportarExcel(){
 
   const aprobLabel = v => v==='Si' ? 'Sí' : (v==='No' ? 'No' : 'Pendiente');
 
-  const resumenRows = [['ID', 'Trabajador','Cargo','RUT','Centro de Costo','Responsable de Centro de Costo','Días registrados','Horas extras','Aprobación final']];
+  const resumenRows = [['Trabajador','Cargo','RUT','Centro de Costo','Responsable de Centro de Costo','Días registrados','Horas extras','Aprobación']];
   const porTrabajador = {};
   Object.keys(entries).forEach(k=>{
     const [workerId, fecha] = k.split('|');
@@ -839,14 +1200,19 @@ function exportarExcel(){
     porTrabajador[workerId].dias += 1;
   });
   
-  workers.slice().sort((a,b)=> Number(a.id) - Number(b.id)).forEach(w=>{
-    const r = porTrabajador[w.id] || {extra:0, dias:0};
-    resumenRows.push([w.id, w.nombre, w.cargo||'', w.rut||'', w.centro, RESPONSABLES[w.centro]||'Por definir', r.dias, r.extra, aprobLabel(aprobaciones[`${w.id}|${mes}`])]);
+  workers.slice()
+    .filter(w => porTrabajador[w.id] && porTrabajador[w.id].dias > 0)
+    .sort((a,b)=> Number(a.id) - Number(b.id))
+    .forEach(w=>{
+      const r = porTrabajador[w.id];
+      resumenRows.push([w.nombre, w.cargo||'', w.rut||'', w.centro, RESPONSABLES[w.centro]||'Por definir', r.dias, r.extra, aprobLabel(aprobaciones[`${w.id}|${mes}`])]);
   });
+  
   const wsResumen = XLSX.utils.aoa_to_sheet(resumenRows);
+  wsResumen['!cols'] = [{wch: 30}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 35}, {wch: 15}, {wch: 15}, {wch: 15}];
   XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen ' + mes);
 
-  const detalleRows = [['Fecha','ID','Trabajador','Cargo','RUT','Centro de Costo','Horas extras','Observaciones']];
+  const detalleRows = [['Fecha','Trabajador','Cargo','RUT','Centro de Costo','Horas extras','Observaciones']];
   const workerMap = {}; workers.forEach(w=>workerMap[w.id]=w);
   Object.keys(entries).sort().forEach(k=>{
     const [workerId, fecha] = k.split('|');
@@ -855,20 +1221,24 @@ function exportarExcel(){
     if(!w) return;
     const e = entries[k];
     if((Number(e.extra)||0)===0 && !e.obs) return;
-    detalleRows.push([fecha, w.id, w.nombre, w.cargo||'', w.rut||'', w.centro, Number(e.extra)||0, e.obs||'']);
+    detalleRows.push([fecha, w.nombre, w.cargo||'', w.rut||'', w.centro, Number(e.extra)||0, e.obs||'']);
   });
   const wsDetalle = XLSX.utils.aoa_to_sheet(detalleRows);
+  wsDetalle['!cols'] = [{wch: 12}, {wch: 30}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 12}, {wch: 40}];
   XLSX.utils.book_append_sheet(wb, wsDetalle, 'Detalle ' + mes);
 
-  XLSX.writeFile(wb, `horas_extras_${mes}.xlsx`);
+  XLSX.writeFile(wb, `Planilla_HorasExtras_${mes}.xlsx`);
+  showToast('Excel generado correctamente.');
 }
 
+// BACKUP & RESTORE
 function exportarJSON(){
   const data = {workers, entries, aprobaciones, exportadoEn: new Date().toISOString()};
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `respaldo_horas_extras_${todayStr()}.json`;
+  const a = document.createElement('a'); a.href = url; a.download = `backup_horas_extras_${todayStr()}.json`;
   a.click(); URL.revokeObjectURL(url);
+  showToast('Respaldo descargado.');
 }
 
 function importarJSON(ev){
@@ -878,20 +1248,27 @@ function importarJSON(ev){
   reader.onload = function(e){
     try{
       const data = JSON.parse(e.target.result);
-      if(!Array.isArray(data.workers)) { alert('Archivo inválido.'); return; }
+      if(!Array.isArray(data.workers)) { 
+        alert('Archivo inválido. Asegúrate de subir un respaldo generado por este sistema.'); 
+        return; 
+      }
+      if(!confirm('¿Estás seguro de restaurar este respaldo? Sobreescribirá la base de datos actual.')) return;
+      
       workers = data.workers; entries = data.entries || {}; aprobaciones = data.aprobaciones || {};
       localStorage.setItem('hhee_cache_workers', JSON.stringify(workers));
       localStorage.setItem('hhee_cache_entries', JSON.stringify(entries));
       localStorage.setItem('hhee_cache_aprobaciones', JSON.stringify(aprobaciones));
       guardarDatosEnGoogle({workers, entries, aprobaciones});
-      alert('Datos importados y subidos.');
+      
+      showToast('Datos restaurados y subidos a la nube con éxito.');
       renderTrabajadores(); renderRegistro(); renderResumen();
-    }catch(err){ alert('Error: ' + err.message); }
+    }catch(err){ alert('Error al leer el archivo: ' + err.message); }
   };
   reader.readAsText(file);
   ev.target.value = '';
 }
 
+// INICIALIZACIÓN
 document.getElementById('reg-fecha').value = todayStr();
 document.getElementById('res-mes').value = monthStr();
 </script>
