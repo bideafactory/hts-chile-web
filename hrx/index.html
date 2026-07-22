@@ -281,9 +281,11 @@
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: #fff; box-shadow: var(--shadow-sm); }
   table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 800px; }
   thead th { position: sticky; top: 0; background: #f8fafc; color: #475569; text-align: left; padding: 14px; border-bottom: 1px solid #cbd5e1; z-index: 10; font-weight: 600; font-size: 0.85rem;}
+  /* Allow natural wrapping to avoid hidden columns */
   tbody td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; line-height: 1.4; } 
   tbody tr:hover { background: #f0f9ff; }
   tbody tr:last-child td { border-bottom: none; }
+  /* Protect select from squishing */
   td select { min-width: 110px; padding: 8px 10px; } 
 
   .hrs-input { width: 80px; text-align: center; font-weight: 600; padding: 8px; }
@@ -634,7 +636,6 @@
           <table id="tbl-registro">
             <thead>
               <tr>
-                <th style="width: 50px;">ID</th>
                 <th>Trabajador</th>
                 <th>Cargo</th>
                 <th>Centro de costo</th>
@@ -1035,6 +1036,7 @@ function toggleMobileMenu() {
 function generarPaginacion(totalItems, currentPage, rowsPerPage, tabIdentifier) {
   const totalPages = Math.ceil(totalItems / rowsPerPage);
   
+  // Opciones de tamaños de página
   const pageSizeOptions = [15, 25, 35, 50].map(size => 
       `<option value="${size}" ${size === rowsPerPage ? 'selected' : ''}>${size}</option>`
   ).join('');
@@ -1050,7 +1052,9 @@ function generarPaginacion(totalItems, currentPage, rowsPerPage, tabIdentifier) 
   `;
 
   if (totalItems <= 15 && rowsPerPage >= 15) {
+      // Si hay muy pocos items, solo mostramos el selector si queremos, pero lo más limpio es ocultar la paginación si cabe en una sola.
       if(totalItems <= rowsPerPage) {
+          // Aún así renderizamos el contenedor vacío para mantener la estructura si queremos
           return '';
       }
   }
@@ -1096,6 +1100,7 @@ function changePage(tabIdentifier, page) {
         renderResumen();
     }
 }
+
 
 async function intentarDesbloqueo(){
   const input = document.getElementById('lock-input');
@@ -1460,7 +1465,6 @@ function renderRegistro(){
     const e = entries[k] || {extra:'', obs:''};
     return `
     <tr>
-      <td data-label="ID"><span style="color: var(--muted); font-size: 0.8rem;">#${w.id}</span></td>
       <td data-label="Trabajador" style="font-weight: 500;">${escapeHtml(w.nombre)}</td>
       <td data-label="Cargo" style="color: var(--muted); font-size: 0.85rem;">${escapeHtml(w.cargo||'--')}</td>
       <td data-label="Centro de costo"><span class="badge ${centroClass(w.centro)}">${w.centro}</span></td>
