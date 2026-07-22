@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>APP - HTS Planilla de Horas Extras</title>
+    <title>Instalar - Planilla de Horas Extras</title>
     <!-- Referencia al Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e5aa8">
@@ -397,14 +397,6 @@
             margin: 16px auto;
         }
 
-        .bounce-arrow {
-            color: var(--primary);
-            animation: bounceDown 1.5s infinite;
-            margin: 20px auto 0;
-            display: flex;
-            justify-content: center;
-        }
-
         .safari-hint {
             font-size: 0.8rem;
             color: var(--text-muted);
@@ -412,10 +404,26 @@
             font-style: italic;
         }
 
-        @keyframes bounceDown {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(12px); }
-            60% { transform: translateY(6px); }
+        /* Nueva flecha superior derecha interactiva */
+        .top-right-arrow {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            padding: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            animation: pointUpRight 1.5s infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes pointUpRight {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(10px, -10px) scale(1.1); }
         }
 
         @media (max-width: 900px) {
@@ -562,8 +570,16 @@
             </div>
 
             <div id="modal-step-ios" class="ios-instructions">
-                <h3 style="font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 8px;">Instalación en iPhone</h3>
-                <p style="color: var(--text-muted); font-size: 0.95rem;">Para instalar en iOS, sigue estos 2 sencillos pasos en tu navegador Safari:</p>
+                <!-- Flecha Flotante Superior Derecha -->
+                <div class="top-right-arrow">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="19" x2="19" y2="5"></line>
+                        <polyline points="9 5 19 5 19 15"></polyline>
+                    </svg>
+                </div>
+
+                <h3 style="font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 8px;">Instalación en iOS / iPad</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Sigue estos 2 sencillos pasos utilizando el menú de la <strong>esquina superior derecha</strong>:</p>
                 
                 <div class="ios-gif-container">
                     <div class="ios-visual-step">
@@ -585,11 +601,7 @@
                     </div>
                 </div>
 
-                <p class="safari-hint">¿No ves el botón Compartir abajo? Desliza la pantalla un poco hacia arriba para que aparezca el menú de Safari.</p>
-
-                <div class="bounce-arrow">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
-                </div>
+                <p class="safari-hint">Busca el ícono apuntado por la flecha en el navegador.</p>
             </div>
             
             <div id="modal-step-success" style="display: none; padding: 20px 0;">
